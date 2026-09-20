@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="sf6-tool" content="portal">
+<meta name="sf6-tool-version" content="2">
+<meta name="sf6-portal-release" content="1.0">
+<title>スト6 ポータル</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&amp;family=Noto+Sans+JP:wght@400;700;900&amp;display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f6f3ee; --ink:#161616; --char:#1f2026; --pink:#ff3d7f; --mute:#666; }
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.6; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+  [hidden]{ display:none !important; }
+  /* 本文幅: 小タイル（約187px）が 8 列並ぶ幅。狭い画面では列数が自動で減り、タイルの大きさは保つ */
+  .wrap{ max-width:1650px; margin:0 auto; padding:40px 20px 70px; }
+
+  /* ---------- ヘッダ ---------- */
+  header{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:16px; }
+  header h1{ margin:0; font-size:clamp(56px,10vw,96px); line-height:.9; }
+  header h1 em{ font-style:normal; color:var(--pink); }
+  #q{ font:inherit; font-size:15px; padding:11px 18px; border-radius:16px; border:3px solid var(--ink); background:#fff; width:300px; max-width:100%; box-shadow:5px 5px 0 var(--ink); }
+  #q:focus{ outline:none; border-color:var(--pink); }
+  .btn{ font:inherit; font-size:13px; font-weight:900; color:var(--ink); background:#fff; border:3px solid var(--ink); border-radius:12px; padding:8px 16px; cursor:pointer; box-shadow:4px 4px 0 var(--ink); transition:.1s; text-decoration:none; display:inline-block; line-height:1.4; }
+  .btn:hover{ transform:translate(-1px,-1px); box-shadow:5px 5px 0 var(--ink); }
+  .btn:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--ink); }
+  .btn:focus-visible{ outline:3px solid var(--pink); outline-offset:2px; }
+  .btn.on{ background:var(--ink); color:#fff; }
+  .btn.pink{ background:var(--pink); color:#fff; }
+  .btn.danger:hover{ background:#e11d48; color:#fff; }
+  .btn.small{ font-size:11.5px; padding:3px 10px; border-width:2px; border-radius:8px; box-shadow:2px 2px 0 var(--ink); }
+  .btn.small:hover{ box-shadow:3px 3px 0 var(--ink); }
+  header .spacer{ flex:1; }
+
+  /* ---------- 背景画像（B1: 画面に固定、スクロールしても動かない） ---------- */
+  .bgimg{ position:fixed; inset:0; z-index:0; pointer-events:none; background:center/cover no-repeat; opacity:.45; mix-blend-mode:multiply; }
+  .bgimg.gray{ filter:grayscale(1); }
+  .wrap{ position:relative; z-index:1; }
+  #bgOp{ width:120px; }
+  #bgPathIn{ width:320px; max-width:100%; font-size:12.5px; padding:4px 8px; }
+
+  /* ---------- 帯（最近の更新・全体の参考情報） ---------- */
+  .band-row{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:14px; font-size:13px; }
+  .band-row .k{ font-weight:900; margin-right:6px; }
+  .band-row .pill{ background:#fff; border:2px solid var(--ink); border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 var(--ink); text-decoration:none; color:var(--ink); cursor:pointer; }
+  .band-row .pill:hover{ background:var(--ink); color:#fff; }
+  .band-row .pill .d{ color:var(--mute); font-size:11px; margin-left:6px; }
+  .band-row .pill:hover .d{ color:#ccc; }
+  .band-row:empty{ display:none; }
+  #common{ margin-top:22px; }
+
+  /* ---------- 編集バー・フォーム ---------- */
+  #editbar{ display:none; margin:0 0 18px; padding:14px 16px; background:#fff; border:3px solid var(--ink); border-radius:16px; box-shadow:6px 6px 0 var(--ink); }
+  body.editing #editbar{ display:block; }
+  .barrow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .status{ font-size:12px; color:var(--mute); margin:10px 0 0; }
+  .status b{ color:var(--ink); font-weight:900; }
+  .form{ display:none; margin:0 0 18px; padding:20px; background:#fff; border:3px solid var(--ink); border-radius:16px; box-shadow:6px 6px 0 var(--ink); }
+  .form.open{ display:block; }
+  .form h2{ margin:0 0 14px; font-size:16px; font-weight:900; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px 18px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field.wide{ grid-column:1/-1; }
+  .field label{ font-size:12px; color:var(--mute); font-weight:700; }
+  .field .hint{ font-size:11.5px; color:var(--mute); }
+  input[type=text], input[type=url], textarea{ font:inherit; font-size:14px; color:var(--ink); background:#fff; border:2px solid var(--ink); border-radius:10px; padding:7px 10px; width:100%; }
+  input:focus, textarea:focus{ outline:none; border-color:var(--pink); }
+  textarea{ resize:vertical; min-height:64px; }
+  .inline{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .check{ display:flex; align-items:center; gap:8px; font-weight:700; cursor:pointer; padding-top:22px; }
+  .check input{ width:18px; height:18px; accent-color:var(--pink); }
+  .formfoot{ display:flex; gap:10px; margin-top:18px; align-items:center; flex-wrap:wrap; }
+  .formfoot .spacer{ flex:1; }
+  .imgprev{ width:64px; height:64px; border:2px solid var(--ink); border-radius:10px; background:#fff; object-fit:contain; }
+
+  /* ---------- セクション ---------- */
+  .sec{ display:flex; align-items:baseline; gap:12px; margin:22px 0 12px; }
+  .sec h2{ margin:0; font-size:34px; line-height:1; }
+  .sec h2 span{ font-family:"Noto Sans JP"; font-weight:900; font-size:14px; margin-left:8px; }
+  .sec i{ font-style:normal; font-size:12px; font-weight:900; background:var(--ink); color:#fff; border-radius:999px; padding:1px 10px; }
+  .sec.mine h2{ color:var(--pink); }
+  .sec .line{ flex:1; height:3px; background:var(--ink); border-radius:2px; }
+  .grid3{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:22px; }
+  .grid6{ display:grid; grid-template-columns:repeat(auto-fill,minmax(182px,1fr)); gap:16px; }
+  @media (max-width:420px){ .grid6{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } }
+  .empty{ color:var(--mute); font-size:13.5px; padding:18px 0; }
+
+  /* ---------- カード（F5: 角落とし + 全面画像、名前は右下に白） ---------- */
+  .card{ position:relative; filter:drop-shadow(6px 6px 0 var(--ink)); transition:transform .12s, filter .12s; }
+  .card:hover{ transform:translate(-2px,-2px); filter:drop-shadow(8px 8px 0 var(--ink)); }
+  .card.open{ grid-column:1/-1; }
+  .oct{ background:var(--ink); padding:3px; clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px),0 16px); }
+  .card.drophot .oct{ background:var(--pink); }
+  .in{ background:var(--char); color:#fff; clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px); display:flex; flex-direction:column; position:relative; overflow:hidden; }
+  .face{ position:relative; min-height:130px; }
+  .pic{ position:absolute; inset:0; background:center/cover no-repeat; transition:filter .25s; }
+  .pic::before{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,0) 35%,rgba(0,0,0,.75) 100%); }
+  .card.noimg .pic{ background-image:repeating-linear-gradient(-45deg,rgba(0,0,0,.18) 0 10px,transparent 10px 26px); }
+  .card.noimg .pic::after{ content:attr(data-ini); position:absolute; left:6px; top:-14px; font-family:"Bebas Neue","Noto Sans JP",sans-serif; font-size:120px; line-height:1; color:rgba(255,255,255,.16); }
+  .name{ position:absolute; right:10px; bottom:0; margin:0; font-family:"Bebas Neue","Noto Sans JP",sans-serif; font-weight:700; font-synthesis:none; font-size:32px; letter-spacing:.05em; line-height:1.1; color:#fff; text-align:right; text-shadow:2px 2px 0 rgba(0,0,0,.55); z-index:2; max-width:calc(100% - 20px); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .grid6 .name.len5{ font-size:25px; } .grid6 .name.len6{ font-size:21px; } .grid6 .name.len7{ font-size:18px; }
+  .stats{ position:absolute; left:10px; top:8px; z-index:2; font-size:11px; color:rgba(255,255,255,.9); display:flex; gap:8px; flex-wrap:wrap; text-shadow:1px 1px 0 rgba(0,0,0,.6); }
+  .stats b{ color:#fff; font-weight:900; }
+  .band{ background:var(--char); border-top:3px solid var(--ink); padding:7px; display:flex; flex-direction:row; gap:4px; margin-top:auto; position:relative; z-index:2; }
+  .band a{ flex:1; display:flex; flex-direction:row; gap:4px; justify-content:center; align-items:center; text-align:center; text-decoration:none; font-family:"Bebas Neue","Noto Sans JP",sans-serif; font-weight:400; font-size:15px; letter-spacing:.04em; padding:4px 2px; color:#fff; background:transparent; border:2px solid rgba(255,255,255,.7); border-radius:8px; line-height:1.3; white-space:nowrap; }
+  .band a:hover, .band a[aria-pressed="true"]{ background:#fff; color:var(--ink); border-color:#fff; }
+  .tools{ position:absolute; top:8px; right:14px; display:none; gap:4px; z-index:3; }
+  body.editing .tools{ display:flex; }
+  .imgwarn{ display:none; position:absolute; left:8px; bottom:6px; font-size:10px; color:#e11d48; background:#fff; padding:1px 6px; border-radius:6px; z-index:3; }
+  body.editing .card.imgfail .imgwarn{ display:block; }
+  /* その他のキャラをグレースケールにし、ホバーでカラーにするモード */
+  body.grayroster .grid6 .card .pic{ filter:grayscale(1); }
+  body.grayroster .grid6 .card:hover .pic{ filter:none; }
+
+  /* 自キャラ（大） */
+  .grid3 .card{ filter:drop-shadow(8px 8px 0 var(--ink)); }
+  .grid3 .oct{ clip-path:polygon(20px 0,calc(100% - 20px) 0,100% 20px,100% calc(100% - 20px),calc(100% - 20px) 100%,20px 100%,0 calc(100% - 20px),0 20px); }
+  .grid3 .in{ clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 18px,100% calc(100% - 18px),calc(100% - 18px) 100%,18px 100%,0 calc(100% - 18px),0 18px); }
+  .grid3 .face{ min-height:230px; }
+  .grid3 .name{ font-size:60px; right:16px; bottom:2px; }
+  .grid3 .stats{ left:16px; top:12px; font-size:12px; gap:12px; }
+  .grid3 .card.noimg .pic::after{ font-size:200px; top:-30px; }
+  .grid3 .band{ padding:12px 14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .grid3 .band a{ font-size:20px; padding:8px 4px; border-radius:10px; }
+  .grid3 .tools{ top:14px; right:22px; }
+
+  /* 参考情報（カード内に展開） */
+  .refs{ position:relative; padding:12px 14px 14px; border-top:3px dashed var(--ink); background:#fff; color:var(--ink); z-index:2; }
+  .refs h4{ margin:0 0 8px; font-size:12px; font-weight:900; color:var(--mute); display:flex; align-items:center; gap:10px; }
+  .refs h4 .spacer{ flex:1; }
+  .reflist{ display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
+  .ref-item{ background:var(--paper); border:2px solid var(--ink); border-radius:12px; padding:10px 12px; font-size:13.5px; }
+  .ref-item p{ margin:0 0 6px; white-space:pre-wrap; }
+  .ref-item a{ color:#0066ff; font-size:12px; word-break:break-all; }
+  .ref-item .d{ color:var(--mute); font-size:11px; margin-left:6px; }
+  .ref-item .rtools{ display:none; gap:4px; margin-top:8px; }
+  body.editing .ref-item .rtools{ display:flex; }
+  .refs .none{ color:var(--mute); font-size:13px; margin:0; }
+
+  /* ---------- 使い方・フッター ---------- */
+  details.help{ margin-top:34px; border:3px solid var(--ink); border-radius:16px; background:#fff; padding:12px 18px; font-size:13.5px; }
+  details.help summary{ cursor:pointer; font-weight:900; }
+  details.help ol{ padding-left:1.4em; } details.help li{ margin:4px 0; }
+  details.help code{ background:var(--paper); padding:0 5px; border-radius:4px; font-size:12.5px; }
+  details.help ul.tips{ padding-left:1.4em; margin:6px 0 0; } details.help ul.tips li{ margin:3px 0; }
+  footer{ color:var(--mute); font-size:12px; padding:16px 0 0; display:flex; gap:16px; flex-wrap:wrap; }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body class="">
+<div class="bgimg" id="bgimg" hidden=""></div>
+<div class="wrap">
+
+<header>
+  <h1 class="disp">SF6 <em>PORTAL</em></h1>
+  <input type="text" id="q" placeholder="キャラを検索（/ でフォーカス）" autocomplete="off" value="">
+  <span class="spacer"></span>
+  <button class="btn" id="editToggle">編集</button>
+</header>
+
+<div id="editbar">
+  <div class="barrow">
+    <button class="btn" id="addCharBtn">キャラを追加</button>
+    <button class="btn" id="addCommonBtn">全体の参考情報を追加</button>
+    <button class="btn pink" id="saveBtn">HTMLを保存</button>
+    <button class="btn" id="exportBtn">JSON書き出し</button>
+    <button class="btn" id="importBtn">JSON読み込み</button>
+    <input type="file" id="importFile" accept="application/json,.json" hidden="">
+  </div>
+  <div class="barrow" style="margin-top:10px">
+    <label style="font-size:12px;font-weight:700;color:var(--mute)">背景画像</label>
+    <button class="btn small" id="bgPick" type="button">画像を選ぶ</button>
+    <input type="text" id="bgPathIn" placeholder="画像/… （画像フォルダ配下のパス。直接入力もできる）" autocomplete="off" value="">
+    <button class="btn small" id="bgClear" type="button">外す</button>
+    <label style="font-size:12px;color:var(--mute)" for="bgOp">濃さ</label><input type="range" id="bgOp" min="5" max="80" value="45"><span id="bgOpV" style="font-size:11.5px;color:var(--mute)">54%</span>
+    <label style="font-size:12px;color:var(--mute)"><input type="checkbox" id="bgGray"> グレースケール</label>
+  </div>
+  <div class="barrow" style="margin-top:10px">
+    <label style="font-size:12px;font-weight:700;color:var(--mute)">表示</label>
+    <label style="font-size:12px;color:var(--mute)"><input type="checkbox" id="grayRoster"> その他のキャラをグレースケールにし、カーソルを当てたときだけカラーにする</label>
+  </div>
+  <p class="status" id="status"></p>
+</div>
+
+<div id="charForm" class="form">
+  <h2 id="charFormTitle">キャラを追加</h2>
+  <div class="grid">
+    <div class="field">
+      <label for="c_name">キャラ名（combo.html に設定した名前と同じにする）</label>
+      <input type="text" id="c_name" placeholder="ラシード" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="c_folder">フォルダ名（空欄ならキャラ名と同じ）</label>
+      <input type="text" id="c_folder" placeholder="COMBO_DB/ と VS_DB/ の下のフォルダ" autocomplete="off">
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="c_mine">自キャラ（上の枠に大きく表示）</label>
+    </div>
+    <div class="field wide">
+      <label>画像（任意）</label>
+      <div class="inline">
+        <img class="imgprev" id="c_imgprev" alt="">
+        <button class="btn small" id="c_pick" type="button">画像を選ぶ</button>
+        <button class="btn small" id="c_imgclear" type="button">画像を外す</button>
+        <span class="hint" id="c_imgpath">画像/ARJUN/rectangle_large_type_2_0ebf4055aa16182d5700c58f29205d85.webp</span>
+      </div>
+      <span class="hint">「画像/&lt;フォルダ名&gt;/」に置いたファイルを選んでください。ファイル名だけを記録し、次回からそのパスで読み込みます。白背景の画像は白が消えて表示されます。</span>
+    </div>
+  </div>
+  <div class="formfoot">
+    <button class="btn on" id="charOk">保存</button>
+    <button class="btn" id="charCancel">取消</button>
+    <span class="spacer"></span>
+    <button class="btn danger" id="charDel" style="display: none;">このキャラを削除</button>
+  </div>
+</div>
+
+<div id="refForm" class="form">
+  <h2 id="refFormTitle">参考情報を追加</h2>
+  <div class="grid">
+    <div class="field wide">
+      <label for="r_text">概要（見出し兼メモ）</label>
+      <textarea id="r_text" placeholder="基礎コンボと起き攻めの解説動画。12:30 から中スパイク〆の話"></textarea>
+    </div>
+    <div class="field wide">
+      <label for="r_url">URL（任意）</label>
+      <input type="url" id="r_url" placeholder="https://youtu.be/..." autocomplete="off">
+    </div>
+  </div>
+  <div class="formfoot">
+    <button class="btn on" id="refOk">保存</button>
+    <button class="btn" id="refCancel">取消</button>
+    <span class="spacer"></span>
+    <button class="btn danger" id="refDel">この参考情報を削除</button>
+  </div>
+</div>
+
+<div class="band-row" id="recent"></div>
+
+<div id="app"></div>
+
+<div class="band-row" id="common"></div>
+
+<details class="help" id="help">
+  <summary>使い方</summary>
+  <ol>
+    <li>新しいキャラは <code>COMBO_DB/テンプレート/</code> をコピーして <code>COMBO_DB/&lt;キャラ名&gt;/</code> に置く（相手キャラの対策は <code>VS_DB/テンプレート/</code> をコピーして <code>VS_DB/&lt;相手キャラ名&gt;/</code> に置く）</li>
+    <li>コピーした <code>combo.html</code> を開き、「編集」→ キャラ名を入力 → 「HTMLを保存」</li>
+    <li>このポータルで「編集」→「キャラを追加」。キャラ名は combo.html と同じにする。自分が使うキャラは「自キャラ」にチェック</li>
+    <li>カードの画像は <code>画像/&lt;キャラ名&gt;/</code> に置き、キャラの編集フォーム「画像を選ぶ」でそのファイルを選ぶ（編集モードでカードにドロップしてもよい）。カード全面に敷かれるので横長のキーアートが向く</li>
+    <li>解説動画などは「参考」ボタン → 「追加」。概要と URL を書く</li>
+    <li>背景画像は「背景画像: 画像を選ぶ」で設定する。初回だけ <code>スト６/画像</code> フォルダを選び、続けてその中のファイルを選ぶ（サブフォルダはどれでもよい）。パス欄に <code>画像/…</code> を直接入力してもよい</li>
+    <li>変更したら「HTMLを保存」で <code>index.html</code> を上書きする</li>
+  </ol>
+  <p><b>背景画像の選び方</b>（ポータル）</p>
+  <ul class="tips">
+    <li>全キャラの入口なので、特定キャラより<b>シリーズのキービジュアル</b>や集合絵が向く。置き場所は <code>画像/StreetFighter6/</code> のような共通フォルダ</li>
+    <li>カードが多く並ぶ画面なので、背景は主張しすぎないものを。カードの画像（キャラごと）と背景（全体）は役割が違う</li>
+    <li><b>大きさ</b>: 横長（16:9 前後）で、幅 1920px 以上が目安（最低でも画面幅の 1280px）。画面いっぱいに拡大して敷かれるため、小さい画像はぼやける</li>
+    <li><b>明るさ</b>: 明るめで淡い画像が向く。紙色の上に「乗算」で重ねるので、白い部分は紙色のまま、暗い部分だけが沈む。暗い画像は 45% でも重く見えるので濃さを下げる</li>
+    <li><b>構図</b>: 被写体（キャラ）が中央〜右にある画像。左上に見出し、左側にカードや動画が並ぶので、左に顔があると隠れる</li>
+    <li><b>避けるもの</b>: 文字やロゴが大きく入った画像（見出しと重なる）、細かい模様（グレースケールにすると濁る）、縦長の画像（左右が切れる）</li>
+    <li><b>濃さ</b>: 色ありなら 30〜45%、グレースケールなら 20〜35% が目安。カードの上の文字は影響を受けないので、雰囲気と背景の見やすさで決める</li>
+    <li><b>形式</b>: JPG（写真・アート）か PNG。1枚 2MB 以内にしておくと開くのが速い</li>
+  </ul>
+  <p><b>カードの画像の選び方</b>: カード全面に敷かれるので、横長のキーアートが向く（白背景の小さな立ち絵は粗く見える）。顔が右寄りにあると、左上の統計や右下の名前と重ならない。置き場所は <code>画像/&lt;キャラ名&gt;/</code></p>
+  <p>動画の軽量化に使う <code>ffmpeg.exe</code> は <code>スト６/</code> 直下に1つ置く。対応ブラウザは Chrome / Edge。</p>
+</details>
+
+<footer><span>SF6 PORTAL 1.0</span><span id="savedAt"></span></footer>
+
+</div>
+
+<script type="application/json" id="portal-data">
+{
+  "version": 2,
+  "saved": "2026-09-20",
+  "bg": {
+    "image": "画像/StreetFighter6/mv_edition_bg.jpg",
+    "opacity": 0.54,
+    "gray": false
+  },
+  "links": [],
+  "chars": [
+    {
+      "name": "RASHID",
+      "folder": "RASHID",
+      "mine": true,
+      "image": "画像/RASHID/topic-08152-1.jpg",
+      "created": "2026-09-19",
+      "refs": []
+    },
+    {
+      "name": "KEN",
+      "folder": "KEN",
+      "mine": true,
+      "image": "画像/KEN/images (2).jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "RYU",
+      "folder": "RYU",
+      "mine": false,
+      "image": "画像/RYU/ryu_ss05_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "LUKE",
+      "folder": "LUKE",
+      "mine": false,
+      "image": "画像/LUKE/Street-Fighter-6-2023-06-05-18-59-53.mp4_000110525.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "JAMIE",
+      "folder": "JAMIE",
+      "mine": false,
+      "image": "画像/JAMIE/jamie_ss05_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "CHUN-LI",
+      "folder": "CHUN-LI",
+      "mine": false,
+      "image": "画像/CHUN-LI/topic-07725-2.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "GUILE",
+      "folder": "GUILE",
+      "mine": false,
+      "image": "画像/GUILE/guile_ss04_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "KIMBEARY",
+      "folder": "KIMBEARY",
+      "mine": false,
+      "image": "画像/KIMBEARY/topic-07760-7.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "JURI",
+      "folder": "JURI",
+      "mine": false,
+      "image": "画像/JURI/596895.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "BLANKA",
+      "folder": "BLANKA",
+      "mine": false,
+      "image": "画像/BLANKA/Street-Fighter-6-2023-06-05-15-21-09.mp4_000125365.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "DHALSIM",
+      "folder": "DHALSIM",
+      "mine": false,
+      "image": "画像/DHALSIM/dhalsim_ss05_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "E.HONDA",
+      "folder": "E.HONDA",
+      "mine": false,
+      "image": "画像/E.HONDA/rectangle_large_type_2_9c5bd5a6e1daabd01c51eeee6fb89435.webp",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "DEE JAY",
+      "folder": "DEE JAY",
+      "mine": false,
+      "image": "画像/DEE JAY/deejay_ss05_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "MANON",
+      "folder": "MANON",
+      "mine": false,
+      "image": "画像/MANON/MANONCA.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "MARISA",
+      "folder": "MARISA",
+      "mine": false,
+      "image": "画像/MARISA/who-has-the-best-win-animation-in-sf6-base-roster-v0-0it69wib5h2b1.webp",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "JP",
+      "folder": "JP",
+      "mine": false,
+      "image": "画像/JP/unnamed.png",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "ZANGIEF",
+      "folder": "ZANGIEF",
+      "mine": false,
+      "image": "画像/ZANGIEF/zangief_ss05_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "LILY",
+      "folder": "LILY",
+      "mine": false,
+      "image": "画像/LILY/lily_ss05_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "CAMMY",
+      "folder": "CAMMY",
+      "mine": false,
+      "image": "画像/CAMMY/025.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "A.K.I",
+      "folder": "A.K.I",
+      "mine": false,
+      "image": "画像/A.K.I/1229684.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "ED",
+      "folder": "ED",
+      "mine": false,
+      "image": "画像/ED/ed_ss05_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "GOUKI",
+      "folder": "GOUKI",
+      "mine": false,
+      "image": "画像/GOUKI/4f2e39f316dc5af84e8228e7eacbd105.png",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "VEGA",
+      "folder": "VEGA",
+      "mine": false,
+      "image": "画像/VEGA/at_35_l.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "TERRY",
+      "folder": "TERRY",
+      "mine": false,
+      "image": "画像/TERRY/topic-08583-1.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "MAI",
+      "folder": "MAI",
+      "mine": false,
+      "image": "画像/MAI/001.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "ELENA",
+      "folder": "ELENA",
+      "mine": false,
+      "image": "画像/ELENA/13450-5020-05cb1d786f9783b488833d3cd50368d1-1920x1080.webp",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "SAGAT",
+      "folder": "SAGAT",
+      "mine": false,
+      "image": "画像/SAGAT/sagat_ss04_thumb.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "C.VIPER",
+      "folder": "C.VIPER",
+      "mine": false,
+      "image": "画像/C.VIPER/sf6-viper-play-movie-sa3.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "ALEX",
+      "folder": "ALEX",
+      "mine": false,
+      "image": "画像/ALEX/012.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "INGLID",
+      "folder": "INGLID",
+      "mine": false,
+      "image": "画像/INGLID/019.jpg",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "YASMINE",
+      "folder": "YASMINE",
+      "mine": false,
+      "image": "画像/YASMINE/street-fighter-6-official-yasmine-update-launch-trailer_cxe8.1200.webp",
+      "created": "2026-09-20",
+      "refs": []
+    },
+    {
+      "name": "ARJUN",
+      "folder": "ARJUN",
+      "mine": false,
+      "image": "画像/ARJUN/rectangle_large_type_2_0ebf4055aa16182d5700c58f29205d85.webp",
+      "created": "2026-09-20",
+      "refs": []
+    }
+  ],
+  "view": {
+    "grayRoster": false
+  }
+}
+</script>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const today = () => new Date().toISOString().slice(0, 10);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const norm = s => String(s == null ? "" : s).toLowerCase()
+  .replace(/[ァ-ヶ]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0x60))
+  .replace(/[！-～]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0));
+const safeUrl = u => /^https?:\/\//i.test(u || "") ? u : "";
+const md = d => d ? d.slice(5).replace("-", "/") : "";
+
+
+/* ============ データ ============ */
+let DATA = JSON.parse($("#portal-data").textContent);
+function migrate(d){
+  d.links = d.links || []; d.chars = d.chars || [];
+  d.links.forEach(l => { if (l.text == null) l.text = [l.title, l.note].filter(Boolean).join(" / "); });
+  d.chars.forEach((c, i) => {
+    if (c.mine == null) c.mine = c.role === "メイン";
+    delete c.role;
+    delete c.color;
+    if (!c.refs) c.refs = (c.links || []).map(l => ({ text:[l.title, l.note].filter(Boolean).join(" / "), url:l.url || "", created:l.created, updated:l.updated }));
+    delete c.links;
+    delete c.combo; delete c.matchup;   /* 同期機能は廃止 */
+    if (c.image == null) c.image = "";
+    delete c.emblem;
+  });
+  delete d.synced;
+  d.version = 2;
+  return d;
+}
+DATA = migrate(DATA);
+let dirty = false;
+let openFolder = null;
+const imgPreview = new Map();   /* folder -> blob URL（選んだ直後のプレビュー用） */
+const imgFailed = new Set();
+
+/* ============ パス ============ */
+const comboPath   = c => "COMBO_DB/" + c.folder + "/combo.html";
+const matchupPath = c => "VS_DB/" + c.folder + "/matchup.html";
+const imgSrc      = c => imgPreview.get(c.folder) || (c.image ? encodeURI(c.image) : "");
+
+function lastUpdated(c){
+  const ds = [];
+  (c.refs || []).forEach(r => { if (r.updated) ds.push(r.updated); });
+  if (c.created) ds.push(c.created);
+  return ds.length ? ds.sort().pop() : "";
+}
+
+/* ============ 状態 ============ */
+function say(msg){ $("#status").innerHTML = msg; }
+function statusLine(){
+  say("キャラ " + DATA.chars.length + " 件（自キャラ " + DATA.chars.filter(c => c.mine).length + "）/ 全体の参考情報 " + DATA.links.length + " 件" +
+      (dirty ? " / <b>未保存の変更があります</b>" : ""));
+  $("#savedAt").textContent = "最終保存 " + (DATA.saved || "—");
+}
+function touch(){ dirty = true; rebuild(); }
+const editing = () => document.body.classList.contains("editing");
+
+/* ============ 描画 ============ */
+function matches(c){
+  const q = norm($("#q").value.trim());
+  if (!q) return true;
+  if (norm(c.name).includes(q) || norm(c.folder).includes(q)) return true;
+  return (c.refs || []).some(r => norm(r.text).includes(q));
+}
+/* 名前の見た目の長さ: 全角文字は 1、英数字（Bebas は細い）は 0.55 として数える */
+const visLen = str => [...String(str)].reduce((n, ch) => n + (/[　-鿿豈-﫿＀-￯]/.test(ch) ? 1 : .55), 0);
+const lenCls = c => { const w = visLen(c.name); return w >= 7 ? " len7" : w >= 6 ? " len6" : w >= 5 ? " len5" : ""; };
+
+function refsHtml(c, ci){
+  const list = c.refs || [];
+  return '<div class="refs">' +
+    '<h4>参考情報<span class="spacer"></span>' +
+      (editing() ? '<button class="btn small" data-act="addref" data-ci="' + ci + '">追加</button>' : "") +
+      '<button class="btn small" data-act="close" data-ci="' + ci + '">閉じる</button></h4>' +
+    (list.length
+      ? '<div class="reflist">' + list.map((r, k) => {
+          const u = safeUrl(r.url);
+          return '<div class="ref-item"><p>' + esc(r.text) + "</p>" +
+            (u ? '<a href="' + esc(u) + '" target="_blank" rel="noopener">' + esc(u) + "</a>" : "") +
+            (r.updated ? '<span class="d">' + esc(r.updated) + "</span>" : "") +
+            '<div class="rtools">' +
+              '<button class="btn small" data-act="editref" data-ci="' + ci + '" data-ri="' + k + '">編集</button>' +
+              '<button class="btn small" data-act="refup" data-ci="' + ci + '" data-ri="' + k + '">↑</button>' +
+              '<button class="btn small" data-act="refdown" data-ci="' + ci + '" data-ri="' + k + '">↓</button>' +
+            "</div></div>";
+        }).join("") + "</div>"
+      : '<p class="none">参考情報はまだありません。' + (editing() ? "「追加」で登録できます。" : "編集モードの「追加」で登録できます。") + "</p>") +
+  "</div>";
+}
+
+function card(c, big){
+  const ci = DATA.chars.indexOf(c);
+  const isOpen = openFolder === c.folder;
+  const src = imgSrc(c);
+  const upd = lastUpdated(c);
+  const stats =
+    (upd ? "<span>更新 <b>" + esc(md(upd)) + "</b></span>" : "");
+  const lbl = big ? ["COMBO DB", "VS DB", "Information"] : ["COMBO", "VS", "INFO"];   /* 小タイルは幅が狭いので省略形 */
+  const band =
+    '<a href="' + esc(comboPath(c)) + '">' + lbl[0] + "</a>" +
+    '<a href="' + esc(matchupPath(c)) + '">' + lbl[1] + "</a>" +
+    '<a href="#" data-act="toggle" data-ci="' + ci + '" aria-pressed="' + isOpen + '">' + lbl[2] + "</a>";
+  return '<article class="card' + (src ? "" : " noimg") + (isOpen ? " open" : "") + (imgFailed.has(c.folder) ? " imgfail" : "") +
+      '" data-folder="' + esc(c.folder) + '" data-ci="' + ci + '">' +
+    '<div class="oct"><div class="in">' +
+    '<div class="tools">' +
+      '<button class="btn small" data-act="edit" data-ci="' + ci + '">編集</button>' +
+      '<button class="btn small" data-act="up" data-ci="' + ci + '">↑</button>' +
+      '<button class="btn small" data-act="down" data-ci="' + ci + '">↓</button></div>' +
+    '<div class="face">' +
+      '<div class="pic" data-ini="' + esc(c.name[0]) + '"' + (src ? ' style="background-image:url(&quot;' + esc(src) + '&quot;)" data-folder="' + esc(c.folder) + '"' : "") + "></div>" +
+      '<div class="stats">' + stats + "</div>" +
+      '<h2 class="name' + lenCls(c) + '">' + esc(c.name) + "</h2>" +
+      '<span class="imgwarn">画像が見つかりません: ' + esc(c.image) + "</span>" +
+    "</div>" +
+    (isOpen ? refsHtml(c, ci) : "") +
+    '<div class="band">' + band + "</div>" +
+  "</div></div></article>";
+}
+
+function section(title, sub, cls, list, big){
+  const shown = list.filter(matches);
+  const emptyMsg = list.length ? "検索に一致するキャラがありません"
+    : (cls === "mine" ? "自キャラはまだありません。キャラの編集で「自キャラ」にチェックすると、ここに大きく表示されます。" : "その他のキャラはまだありません。");
+  return '<div class="sec ' + cls + '"><h2 class="disp">' + title + "<span>" + sub + "</span></h2><i>" + list.length + '</i><span class="line"></span></div>' +
+    (shown.length
+      ? '<div class="' + (big ? "grid3" : "grid6") + '">' + shown.map(c => card(c, big)).join("") + "</div>"
+      : '<p class="empty">' + emptyMsg + "</p>");
+}
+
+function paint(){
+  const mine = DATA.chars.filter(c => c.mine), rest = DATA.chars.filter(c => !c.mine);
+  const app = $("#app");
+  app.innerHTML = DATA.chars.length
+    ? section("MY CHARACTERS", "自キャラ", "mine", mine, true) + section("ROSTER", "その他のキャラ", "rest", rest, false)
+    : '<p class="empty">キャラがまだ登録されていません。「編集」→「キャラを追加」から始めてください。</p>';
+
+  app.querySelectorAll(".pic[data-folder]").forEach(el => {
+    const folder = el.dataset.folder, c = DATA.chars.find(x => x.folder === folder);
+    if (!c || imgFailed.has(folder)){ if (c){ el.closest(".card").classList.add("imgfail", "noimg"); el.style.backgroundImage = ""; } return; }
+    const probe = new Image();
+    probe.onerror = () => { imgFailed.add(folder); const cd = el.closest(".card"); if (cd){ cd.classList.add("imgfail", "noimg"); el.style.backgroundImage = ""; } };
+    probe.onload = () => imgFailed.delete(folder);
+    probe.src = imgSrc(c);
+  });
+  document.body.classList.toggle("grayroster", !!(DATA.view && DATA.view.grayRoster));
+  paintRecent(); paintCommon();
+  $("#help").open = !DATA.chars.length || $("#help").open;
+}
+function paintRecent(){
+  const rows = DATA.chars.map(c => ({ c, d:lastUpdated(c) })).filter(x => x.d).sort((a, b) => b.d.localeCompare(a.d)).slice(0, 8);
+  $("#recent").innerHTML = rows.length
+    ? '<span class="k">最近の更新</span>' + rows.map(x => '<a class="pill" href="#" data-act="toggle" data-ci="' + DATA.chars.indexOf(x.c) + '">' + esc(x.c.name) + '<span class="d">' + esc(md(x.d)) + "</span></a>").join("")
+    : "";
+}
+function paintCommon(){
+  const box = $("#common");
+  if (!DATA.links.length && !editing()){ box.innerHTML = ""; return; }
+  box.innerHTML = '<span class="k">全体の参考情報</span>' + DATA.links.map((l, i) => {
+    const u = safeUrl(l.url);
+    const t = l.text.length > 40 ? l.text.slice(0, 40) + "…" : l.text;
+    return (u ? '<a class="pill" href="' + esc(u) + '" target="_blank" rel="noopener" title="' + esc(l.text) + '">' + esc(t) + "</a>"
+              : '<span class="pill" title="' + esc(l.text) + '">' + esc(t) + "</span>") +
+      (editing() ? ' <button class="btn small" data-act="editref" data-ci="common" data-ri="' + i + '">編集</button>' : "");
+  }).join("") + (editing() && !DATA.links.length ? '<span class="empty" style="padding:0">まだありません</span>' : "");
+}
+function rebuild(){ paint(); statusLine(); }
+
+/* ============ 操作（イベント委譲） ============ */
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]");
+  if (!b) return;
+  const act = b.dataset.act, ci = b.dataset.ci === "common" ? "common" : Number(b.dataset.ci), ri = Number(b.dataset.ri);
+  const c = ci === "common" ? null : DATA.chars[ci];
+  if (act === "toggle"){ e.preventDefault(); toggleOpen(c.folder); }
+  if (act === "close"){ openFolder = null; paint(); }
+  if (act === "edit") openCharForm(ci);
+  if (act === "up" || act === "down"){
+    /* 同じ枠（自キャラ / その他）の中で入れ替える */
+    const same = DATA.chars.map((x, i) => ({ x, i })).filter(o => !!o.x.mine === !!c.mine);
+    const pos = same.findIndex(o => o.i === ci);
+    const target = same[pos + (act === "up" ? -1 : 1)];
+    if (target){ DATA.chars[target.i] = c; DATA.chars[ci] = target.x; touch(); }
+  }
+  if (act === "addref") openRefForm(ci, -1);
+  if (act === "editref") openRefForm(ci, ri);
+  if (act === "refup" || act === "refdown"){
+    const arr = c.refs, j = ri + (act === "refup" ? -1 : 1);
+    if (j >= 0 && j < arr.length){ [arr[ri], arr[j]] = [arr[j], arr[ri]]; touch(); }
+  }
+});
+function toggleOpen(folder){
+  openFolder = openFolder === folder ? null : folder;
+  paint();
+  if (openFolder){ const el = document.querySelector('.card[data-folder="' + CSS.escape(openFolder) + '"]'); if (el) el.scrollIntoView({ block:"nearest" }); }
+}
+
+/* カードへの画像ドロップ（編集モード） */
+document.addEventListener("dragover", e => {
+  const cd = e.target.closest(".card"); if (!cd || !editing()) return;
+  e.preventDefault(); cd.classList.add("drophot");
+});
+document.addEventListener("dragleave", e => { const cd = e.target.closest(".card"); if (cd) cd.classList.remove("drophot"); });
+document.addEventListener("drop", e => {
+  const cd = e.target.closest(".card"); if (!cd || !editing()) return;
+  e.preventDefault(); cd.classList.remove("drophot");
+  const f = e.dataTransfer.files[0];
+  if (f && /^image\//.test(f.type)) setImage(DATA.chars[Number(cd.dataset.ci)], f);
+});
+function setImage(c, file){
+  c.image = "画像/" + c.folder + "/" + file.name;
+  if (imgPreview.has(c.folder)) URL.revokeObjectURL(imgPreview.get(c.folder));
+  imgPreview.set(c.folder, URL.createObjectURL(file));
+  imgFailed.delete(c.folder);
+  touch();
+  say("画像を <b>" + esc(c.image) + "</b> に設定しました。ファイルがその場所にあることを確認してください");
+}
+
+/* ============ キャラフォーム ============ */
+let editingChar = -1, pendingImg = null, pendingClear = false;
+const picker = document.createElement("input"); picker.type = "file"; picker.accept = "image/*";
+$("#c_pick").onclick = () => picker.click();
+picker.onchange = () => {
+  const f = picker.files[0]; if (!f) return;
+  pendingImg = f; pendingClear = false;
+  const prev = $("#c_imgprev"); prev.src = URL.createObjectURL(f); prev.hidden = false;
+  $("#c_imgpath").textContent = "画像/" + ($("#c_folder").value.trim() || $("#c_name").value.trim() || "<フォルダ名>") + "/" + f.name;
+  picker.value = "";
+};
+$("#c_imgclear").onclick = () => { pendingImg = null; pendingClear = true; $("#c_imgprev").hidden = true; $("#c_imgpath").textContent = "（画像なし）"; };
+
+function openCharForm(idx){
+  editingChar = idx; pendingImg = null; pendingClear = false;
+  const c = idx < 0 ? { name:"", folder:"", mine:false, image:"" } : DATA.chars[idx];
+  $("#charFormTitle").textContent = idx < 0 ? "キャラを追加" : "キャラを編集: " + c.name;
+  $("#c_name").value = c.name; $("#c_folder").value = c.folder === c.name ? "" : c.folder;
+  $("#c_mine").checked = !!c.mine;
+  const prev = $("#c_imgprev");
+  if (c.image){ prev.src = imgSrc(c); prev.hidden = false; $("#c_imgpath").textContent = c.image; }
+  else { prev.hidden = true; $("#c_imgpath").textContent = "（画像なし）"; }
+  $("#charDel").style.display = idx < 0 ? "none" : "";
+  closeRefForm();
+  $("#charForm").classList.add("open"); $("#charForm").scrollIntoView({ block:"nearest" }); $("#c_name").focus();
+}
+function closeCharForm(){ editingChar = -1; $("#charForm").classList.remove("open"); }
+$("#charCancel").onclick = closeCharForm;
+$("#charOk").onclick = () => {
+  const name = $("#c_name").value.trim();
+  if (!name){ say("キャラ名を入力してください"); return; }
+  const folder = ($("#c_folder").value.trim() || name).replace(/[\\/:*?"<>|]/g, "");
+  const dupe = DATA.chars.findIndex((x, i) => x.folder === folder && i !== editingChar);
+  if (dupe >= 0){ say("同じフォルダ名のキャラが既にあります: <b>" + esc(DATA.chars[dupe].name) + "</b>"); return; }
+  let c;
+  if (editingChar < 0){ c = { name, folder, mine:false, image:"", created:today(), refs:[] }; DATA.chars.push(c); }
+  else { c = DATA.chars[editingChar]; if (c.folder !== folder) imgPreview.delete(c.folder); c.name = name; c.folder = folder; }
+  c.mine = $("#c_mine").checked;
+  if (pendingClear){ c.image = ""; imgPreview.delete(folder); }
+  if (pendingImg) setImage(c, pendingImg);
+
+  openFolder = null;
+  closeCharForm(); touch();
+};
+$("#charDel").onclick = () => {
+  if (editingChar < 0) return;
+  const c = DATA.chars[editingChar];
+  if (!confirm("「" + c.name + "」をポータルから削除しますか？\n（フォルダやファイルは削除されません）")) return;
+  DATA.chars.splice(editingChar, 1); closeCharForm(); touch();
+};
+$("#addCharBtn").onclick = () => openCharForm(-1);
+
+/* ============ 参考情報フォーム ============ */
+let refOwner = null, refIdx = -1;
+const refArr = () => refOwner === "common" ? DATA.links : DATA.chars[refOwner].refs;
+function openRefForm(owner, idx){
+  refOwner = owner; refIdx = idx;
+  if (owner !== "common" && !DATA.chars[owner].refs) DATA.chars[owner].refs = [];
+  const r = idx < 0 ? { text:"", url:"" } : refArr()[idx];
+  $("#refFormTitle").textContent = (owner === "common" ? "全体" : DATA.chars[owner].name) + " の参考情報を" + (idx < 0 ? "追加" : "編集");
+  $("#r_text").value = r.text || ""; $("#r_url").value = r.url || "";
+  $("#refDel").style.display = idx < 0 ? "none" : "";
+  closeCharForm();
+  $("#refForm").classList.add("open"); $("#refForm").scrollIntoView({ block:"nearest" }); $("#r_text").focus();
+}
+function closeRefForm(){ refOwner = null; refIdx = -1; $("#refForm").classList.remove("open"); }
+$("#refCancel").onclick = closeRefForm;
+$("#refOk").onclick = () => {
+  const text = $("#r_text").value.trim(), url = $("#r_url").value.trim();
+  if (!text){ say("概要を入力してください"); return; }
+  if (url && !safeUrl(url)){ say("URL は http(s) で始まるものにしてください"); return; }
+  const arr = refArr();
+  const r = { text, url, updated:today() };
+  if (refIdx < 0){ r.created = r.updated; arr.push(r); } else { r.created = arr[refIdx].created || r.updated; arr[refIdx] = r; }
+  if (refOwner !== "common") openFolder = DATA.chars[refOwner].folder;
+  closeRefForm(); touch();
+};
+$("#refDel").onclick = () => {
+  if (refIdx < 0) return;
+  if (!confirm("この参考情報を削除しますか？")) return;
+  refArr().splice(refIdx, 1); closeRefForm(); touch();
+};
+$("#addCommonBtn").onclick = () => openRefForm("common", -1);
+
+/* ============ 保存・JSON ============ */
+function buildHtml(){
+  const doc = document.documentElement.cloneNode(true);
+  doc.querySelector("#portal-data").textContent = "\n" + JSON.stringify(DATA, null, 2) + "\n";
+  ["#app", "#recent", "#common"].forEach(s => { doc.querySelector(s).innerHTML = ""; });
+  ["#status", "#savedAt"].forEach(s => { doc.querySelector(s).textContent = ""; });
+  doc.querySelectorAll(".form").forEach(f => f.classList.remove("open"));
+  doc.querySelector("#help").removeAttribute("open");
+  doc.querySelector("#q").setAttribute("value", "");
+  doc.querySelector("#c_imgprev").removeAttribute("src");   /* 選択直後のプレビュー（blob:）を保存しない */
+  const et = doc.querySelector("#editToggle"); et.className = "btn"; et.textContent = "編集";
+  const bgEl = doc.querySelector("#bgimg"); bgEl.removeAttribute("style"); bgEl.className = "bgimg"; bgEl.setAttribute("hidden", "");
+  doc.querySelector("#bgPathIn").setAttribute("value", "");
+  doc.querySelector("body").className = "";
+  return "<!DOCTYPE html>\n" + doc.outerHTML;
+}
+function download(name, text, type){
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+$("#saveBtn").onclick = async () => {
+  DATA.saved = today();
+  const html = buildHtml();
+  if ("showSaveFilePicker" in window){
+    try{
+      const fh = await window.showSaveFilePicker({ suggestedName:"index.html", id:"sf6portal", types:[{ description:"HTML", accept:{ "text/html":[".html"] } }] });
+      const w = await fh.createWritable(); await w.write(html); await w.close();
+      dirty = false; rebuild(); say("保存しました"); return;
+    }catch(e){ if (e.name === "AbortError") return; }
+  }
+  download("index.html", html, "text/html");
+  dirty = false; rebuild(); say("ダウンロードした index.html で元のファイルを差し替えてください");
+};
+$("#exportBtn").onclick = () => download("portal.json", JSON.stringify(DATA, null, 2), "application/json");
+$("#importBtn").onclick = () => $("#importFile").click();
+$("#importFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    if (!d || !Array.isArray(d.chars)) throw new Error("chars 配列がありません");
+    if (!confirm("現在のデータを読み込んだ内容で置き換えます。よろしいですか？")) return;
+    DATA = migrate(d); DATA.bg = Object.assign({ image:"", opacity:.45, gray:false }, DATA.bg || {}); bgPreview = null; applyBg();
+    DATA.view = Object.assign({ grayRoster:false }, DATA.view || {}); $("#grayRoster").checked = !!DATA.view.grayRoster;
+    closeCharForm(); closeRefForm(); touch(); say("読み込みました");
+  }catch(err){ say("読み込めませんでした: " + esc(err.message)); }
+  e.target.value = "";
+};
+
+/* ============ 背景画像（B1: 固定・1枚） ============
+   画像は「画像/」配下ならどのフォルダでもよい。
+   選び方: 「画像を選ぶ」→ 初回だけ 画像 フォルダを接続 → ファイルを選ぶと、画像フォルダからの相対パスを自動で記録する。
+   フォルダ接続ができない環境では、パス欄に「画像/…」を直接入力する。 */
+DATA.bg = Object.assign({ image:"", opacity:.45, gray:false }, DATA.bg || {});
+let bgPreview = null;
+let imgDir = null;                       /* 接続した 画像 フォルダ（このセッションだけ） */
+function applyBg(){
+  const el = $("#bgimg"), b = DATA.bg;
+  const src = bgPreview || (b.image ? encodeURI(b.image) : "");
+  el.hidden = !src;
+  el.style.backgroundImage = src ? 'url("' + src + '")' : "";
+  el.style.opacity = b.opacity;
+  el.classList.toggle("gray", !!b.gray);
+  if (document.activeElement !== $("#bgPathIn")) $("#bgPathIn").value = b.image || "";
+  $("#bgOp").value = Math.round(b.opacity * 100); $("#bgOpV").textContent = Math.round(b.opacity * 100) + "%";
+  $("#bgGray").checked = !!b.gray;
+}
+function setBgImage(path, previewUrl){
+  DATA.bg.image = path;
+  if (bgPreview) URL.revokeObjectURL(bgPreview);
+  bgPreview = previewUrl || null;
+  dirty = true; applyBg(); statusLine();
+}
+async function connectImgDir(){
+  if (imgDir) return imgDir;
+  say("背景に使う画像が入っている <b>画像</b> フォルダ（スト６/画像）を選んでください");
+  const h = await window.showDirectoryPicker({ mode:"read", id:"sf6images", startIn:"desktop" });
+  if (h.name !== "画像" && !confirm("選んだフォルダは「" + h.name + "」です。\n「画像」フォルダを選ぶと、その中のどのサブフォルダの画像でも保存できます。\nこのまま続けますか？（パスは 画像/ からの相対で記録されます）")) return null;
+  imgDir = h; return h;
+}
+$("#bgPick").onclick = async () => {
+  if (!("showOpenFilePicker" in window)){
+    say("このブラウザはファイル選択に対応していません。パス欄に <b>画像/…</b> を直接入力してください");
+    return;
+  }
+  try{
+    const dir = await connectImgDir(); if (!dir) return;
+    const [fh] = await window.showOpenFilePicker({ id:"sf6bg", startIn:dir, types:[{ description:"画像", accept:{ "image/*":[".png", ".jpg", ".jpeg", ".webp", ".gif"] } }] });
+    const rel = await dir.resolve(fh);
+    if (!rel){ say("<b>画像</b> フォルダの外のファイルは使えません。画像/ 配下に置いてから選んでください"); return; }
+    const f = await fh.getFile();
+    setBgImage("画像/" + rel.join("/"), URL.createObjectURL(f));
+    say("背景画像を <b>" + esc(DATA.bg.image) + "</b> に設定しました。「HTMLを保存」で確定します");
+  }catch(e){ if (e.name !== "AbortError") say("選択できませんでした: " + esc(e.message)); }
+};
+$("#bgPathIn").addEventListener("change", () => {
+  const v = $("#bgPathIn").value.trim().replace(/\\/g, "/").replace(/^\.?\//, "");
+  if (v && !/^画像\//.test(v)){ say("パスは <b>画像/</b> で始めてください（例: 画像/KEN/key.jpg）"); return; }
+  setBgImage(v, null);
+});
+$("#bgClear").onclick = () => setBgImage("", null);
+$("#bgOp").oninput = () => { DATA.bg.opacity = $("#bgOp").value / 100; dirty = true; applyBg(); statusLine(); };
+$("#bgGray").onchange = () => { DATA.bg.gray = $("#bgGray").checked; dirty = true; applyBg(); statusLine(); };
+
+/* ============ 表示モード ============ */
+DATA.view = Object.assign({ grayRoster:false }, DATA.view || {});
+$("#grayRoster").checked = !!DATA.view.grayRoster;
+$("#grayRoster").onchange = () => { DATA.view.grayRoster = $("#grayRoster").checked; dirty = true; paint(); statusLine(); };
+
+/* ============ 編集モード・検索・キー ============ */
+$("#editToggle").onclick = () => {
+  const on = document.body.classList.toggle("editing");
+  $("#editToggle").classList.toggle("on", on);
+  $("#editToggle").textContent = on ? "編集を終える" : "編集";
+  if (!on){ closeCharForm(); closeRefForm(); }
+  rebuild();
+};
+$("#q").addEventListener("input", paint);
+document.addEventListener("keydown", e => {
+  if (e.key === "/" && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)){ e.preventDefault(); $("#q").focus(); $("#q").select(); }
+  if (e.key === "Escape" && document.activeElement === $("#q")){ $("#q").value = ""; paint(); }
+});
+window.addEventListener("beforeunload", e => { if (dirty){ e.preventDefault(); e.returnValue = ""; } });
+
+applyBg();
+rebuild();
+</script>
+
+</body></html>

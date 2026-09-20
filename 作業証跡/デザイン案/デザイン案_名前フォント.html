@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>キャラ名（英語）のフォント案（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Teko:wght@300;400;500;700&family=Oswald:wght@300;400&family=Rajdhani:wght@500;600&family=Saira+Condensed:wght@400;500&family=Barlow+Condensed:wght@400;500&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f6f3ee; --ink:#161616; --char:#1f2026; --mute:#666; --pink:#ff3d7f; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.6; }
+  a{ color:inherit; text-decoration:none; }
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; background:#161616; color:#fff; font-size:12.5px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 6px; background:#161616; color:#999; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#ff3d7f; }
+  #tabs b{ font-weight:900; margin-right:5px; }
+  .bg{ position:fixed; inset:0; z-index:0; pointer-events:none; background:url("../../画像/RASHID/y_64a3cd87d8348.jpg") center/cover no-repeat; opacity:.45; mix-blend-mode:multiply; }
+  .page{ position:relative; z-index:1; padding:64px 20px 80px; max-width:1240px; margin:0 auto; }
+  h1{ margin:0 0 6px; font-size:72px; line-height:.9; font-family:"Bebas Neue"; }
+  h1 em{ font-style:normal; color:var(--pink); }
+  .sec{ display:flex; align-items:baseline; gap:12px; margin:22px 0 12px; }
+  .sec h2{ margin:0; font-size:32px; line-height:1; font-family:"Bebas Neue"; }
+  .sec h2 span{ font-family:"Noto Sans JP"; font-weight:900; font-size:13px; margin-left:8px; }
+  .sec.mine h2{ color:var(--pink); }
+  .sec .line{ flex:1; height:3px; background:var(--ink); border-radius:2px; }
+  .grid3{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:24px; }
+  .grid6{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:18px; }
+  .note{ font-size:12.5px; color:#333; margin:26px 0 0; background:rgba(255,255,255,.75); padding:10px 14px; border-radius:10px; }
+
+  /* F5 カード（現行） */
+  .card{ position:relative; filter:drop-shadow(6px 6px 0 var(--ink)); }
+  .oct{ background:var(--ink); padding:3px; clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px),0 16px); }
+  .in{ background:var(--c); color:#fff; clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% calc(100% - 14px),calc(100% - 14px) 100%,14px 100%,0 calc(100% - 14px),0 14px); display:flex; flex-direction:column; position:relative; overflow:hidden; }
+  .face{ position:relative; min-height:130px; }
+  .pic{ position:absolute; inset:0; background:var(--img,none) center/cover no-repeat; background-color:var(--c); }
+  .pic::before{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,0) 35%,rgba(0,0,0,.75) 100%); }
+  .noimg .pic{ background-image:repeating-linear-gradient(-45deg,rgba(0,0,0,.18) 0 10px,transparent 10px 26px); }
+  .stats{ position:absolute; left:10px; top:8px; z-index:2; font-size:11px; color:rgba(255,255,255,.9); display:flex; gap:8px; text-shadow:1px 1px 0 rgba(0,0,0,.6); }
+  .stats b{ color:#fff; font-weight:900; }
+  .name{ position:absolute; right:10px; bottom:0; margin:0; color:#fff; text-align:right; z-index:2; line-height:1.1; white-space:nowrap; text-shadow:2px 2px 0 rgba(0,0,0,.55); }
+  .name small{ display:block; font-family:"Noto Sans JP"; font-weight:700; font-size:10px; letter-spacing:.25em; opacity:.85; text-shadow:none; line-height:1.2; }
+  .band{ background:var(--char); border-top:3px solid var(--ink); padding:7px; display:flex; gap:4px; margin-top:auto; position:relative; z-index:2; }
+  .band a{ flex:1; text-align:center; font-family:"Bebas Neue"; font-size:13px; letter-spacing:.02em; padding:4px 1px; color:#fff; border:2px solid rgba(255,255,255,.7); border-radius:8px; white-space:nowrap; }
+  .grid3 .card{ filter:drop-shadow(8px 8px 0 var(--ink)); }
+  .grid3 .face{ min-height:230px; }
+  .grid3 .stats{ left:16px; top:12px; font-size:12px; gap:12px; }
+  .grid3 .band{ padding:12px 14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .grid3 .band a{ font-size:20px; padding:8px 4px; border-radius:10px; }
+  body.grayroster .grid6 .pic{ filter:grayscale(1); } body.grayroster .grid6 .card:hover .pic{ filter:none; }
+
+  /* ---- 名前のフォント案 ---- */
+  /* T0 現行: Teko 700 */
+  body.T0 .name{ font-family:"Teko"; font-weight:700; font-size:34px; letter-spacing:.02em; }
+  body.T0 .grid3 .name{ font-size:64px; }
+  /* T1 Teko 400（同じ書体の細字） */
+  body.T1 .name{ font-family:"Teko"; font-weight:400; font-size:36px; letter-spacing:.04em; }
+  body.T1 .grid3 .name{ font-size:68px; }
+  /* T2 Bebas Neue（ロゴと同じ。細めのコンデンス） */
+  body.T2 .name{ font-family:"Bebas Neue"; font-weight:400; font-size:32px; letter-spacing:.05em; }
+  body.T2 .grid3 .name{ font-size:60px; }
+  /* T3 Oswald 300（細身のコンデンス。落ち着き） */
+  body.T3 .name{ font-family:"Oswald"; font-weight:300; font-size:26px; letter-spacing:.08em; bottom:6px; }
+  body.T3 .grid3 .name{ font-size:48px; bottom:10px; }
+  /* T4 Rajdhani 500（角張った幾何学体。SF のメカ寄り） */
+  body.T4 .name{ font-family:"Rajdhani"; font-weight:500; font-size:28px; letter-spacing:.06em; bottom:6px; }
+  body.T4 .grid3 .name{ font-size:52px; bottom:10px; }
+  /* T5 Saira Condensed 400（幾何学 + コンデンス。中庸） */
+  body.T5 .name{ font-family:"Saira Condensed"; font-weight:400; font-size:28px; letter-spacing:.06em; bottom:6px; }
+  body.T5 .grid3 .name{ font-size:52px; bottom:10px; }
+  /* T6 中抜き（Teko 700 を白い縁取りだけにして軽く見せる） */
+  body.T6 .name{ font-family:"Teko"; font-weight:700; font-size:36px; letter-spacing:.06em; color:transparent; -webkit-text-stroke:1.5px #fff; text-shadow:none; }
+  body.T6 .grid3 .name{ font-size:70px; -webkit-text-stroke:2px #fff; }
+  body.T6 .name small{ color:#fff; -webkit-text-stroke:0; }
+  /* T7 細字 + キャラ色の下線（Barlow Condensed 400） */
+  body.T7 .name{ font-family:"Barlow Condensed"; font-weight:400; font-size:30px; letter-spacing:.08em; bottom:8px; padding-bottom:4px; border-bottom:3px solid var(--c); }
+  body.T7 .grid3 .name{ font-size:54px; bottom:12px; border-bottom-width:4px; }
+</style>
+</head>
+<body class="T0 grayroster">
+<div id="tabs">
+  <button data-v="T0" aria-pressed="true"><b>T0</b>現行 Teko 700</button>
+  <button data-v="T1"><b>T1</b>Teko 400</button>
+  <button data-v="T2"><b>T2</b>Bebas Neue</button>
+  <button data-v="T3"><b>T3</b>Oswald 300</button>
+  <button data-v="T4"><b>T4</b>Rajdhani 500</button>
+  <button data-v="T5"><b>T5</b>Saira Cond. 400</button>
+  <button data-v="T6"><b>T6</b>中抜き</button>
+  <button data-v="T7"><b>T7</b>Barlow + 下線</button>
+</div>
+<div class="bg"></div>
+<div class="page">
+  <h1>SF6 <em>PORTAL</em></h1>
+  <div id="app"></div>
+  <p class="note" id="note"></p>
+</div>
+<script>
+const MINE = [ { n:"RASHID", ja:"ラシード", c:"#00c9a7", img:"../../画像/RASHID/topic-08152-1.jpg", l:2, f:1, u:"09/19", r:2 },
+               { n:"KEN", ja:"ケン", c:"#ff4b4b", img:"../../画像/RASHID/y_64a3cd87d8348.jpg", l:0, f:0, u:"09/15", r:1 } ];
+const REST = [ ["CHUN-LI","春麗","#3b82f6","../../画像/RASHID/topic-08152-1.jpg"], ["JURI","ジュリ","#c026d3",""], ["ZANGIEF","ザンギエフ","#dc2626",""], ["DEE JAY","ディージェイ","#22c55e","../../画像/RASHID/y_64a3cd87d8348.jpg"], ["A.K.I.","A.K.I.","#7c3aed",""], ["GUILE","ガイル","#0ea5e9",""] ];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const style = (c, img) => 'style="--c:' + c + (img ? ';--img:url(\'' + encodeURI(img) + '\')' : "") + '"';
+const big = m => '<div class="card' + (m.img ? "" : " noimg") + '" ' + style(m.c, m.img) + '><div class="oct"><div class="in"><div class="face"><div class="pic"></div>' +
+  '<div class="stats"><span>習得 <b>' + m.l + '</b></span><span>★ <b>' + m.f + '</b></span><span>更新 <b>' + m.u + '</b></span></div>' +
+  '<h3 class="name"><small>' + esc(m.ja) + '</small>' + esc(m.n) + '</h3></div>' +
+  '<div class="band"><a href="#">COMBO DB</a><a href="#">VS DB</a><a href="#">Information ' + m.r + '</a></div></div></div></div>';
+const tile = r => '<div class="card' + (r[3] ? "" : " noimg") + '" ' + style(r[2], r[3]) + '><div class="oct"><div class="in"><div class="face"><div class="pic"></div>' +
+  '<h3 class="name">' + esc(r[0]) + '</h3></div><div class="band"><a href="#">COMBO DB</a><a href="#">VS DB</a><a href="#">INFO</a></div></div></div></div>';
+const NOTES = {
+  T0: "現行。Teko 700 は字面が太く、白の面積が多いので画像の上で重く見える。",
+  T1: "同じ Teko の 400。骨格はそのままで線だけ細くなる。最も変化が小さい選択肢。",
+  T2: "Bebas Neue。ページ見出し（SF6 PORTAL、COMBO DB）と同じ書体なので統一感が出る。字幅は Teko より広い。",
+  T3: "Oswald 300。細身のコンデンスで落ち着く。幾何学というより新聞見出し寄り。",
+  T4: "Rajdhani 500。角を落とした幾何学体で、SF6 の UI のメカっぽさに近い。字幅が広めなので長い名前は小さくなる。",
+  T5: "Saira Condensed 400。幾何学 + コンデンスの中間。癖が少ない。",
+  T6: "Teko 700 のまま中抜き（白い縁取りのみ）。太さは同じでも塗りが無いので軽く見え、画像も透ける。小タイルでは線が細くなり読みにくい場合がある。",
+  T7: "Barlow Condensed 400 の細字に、キャラ色の下線を添える。キャラ色を名前の近くに置ける。"
+};
+document.getElementById("app").innerHTML =
+  '<div class="sec mine"><h2>MY CHARACTERS<span>自キャラ</span></h2><span class="line"></span></div><div class="grid3">' + MINE.map(big).join("") + '</div>' +
+  '<div class="sec"><h2>ROSTER<span>その他のキャラ</span></h2><span class="line"></span></div><div class="grid6">' + REST.map(tile).join("") + '</div>';
+function show(v){
+  document.body.className = v + " grayroster";
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+  document.getElementById("note").textContent = NOTES[v];
+  location.hash = v;
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => show(b.dataset.v));
+show(/^#T[0-7]$/.test(location.hash) ? location.hash.slice(1) : "T0");
+</script>
+</body></html>

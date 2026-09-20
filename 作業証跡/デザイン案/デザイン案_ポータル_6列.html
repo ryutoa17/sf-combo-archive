@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ポータル デザイン案 6列 + 自キャラ（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#f6f3ee; color:#161616; font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.6; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; background:#161616; color:#fff; font-size:12.5px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 6px; background:#161616; color:#999; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#ff3d7f; }
+  #tabs b{ font-weight:900; margin-right:5px; }
+  .variant{ display:none; min-height:100vh; padding-top:44px; }
+  .variant.on{ display:block; }
+  .note{ font-size:12.5px; color:#666; margin:18px 0 0; }
+  [hidden]{ display:none !important; }
+
+  /* ---- 共通 ---- */
+  .wrap{ max-width:1240px; margin:0 auto; padding:40px 20px 80px; }
+  header{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-bottom:18px; }
+  h1{ margin:0; font-size:clamp(56px,10vw,96px); line-height:.9; }
+  h1 em{ font-style:normal; color:#ff3d7f; }
+  .search input{ font:inherit; font-size:15px; padding:11px 18px; border-radius:16px; border:3px solid #161616; background:#fff; min-width:280px; box-shadow:5px 5px 0 #161616; }
+  .recent{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:22px; font-size:13px; }
+  .recent .k{ font-weight:900; margin-right:6px; }
+  .recent span:not(.k){ background:#fff; border:2px solid #161616; border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 #161616; }
+
+  .sec{ display:flex; align-items:baseline; gap:12px; margin:26px 0 12px; }
+  .sec h2{ margin:0; font-size:34px; line-height:1; }
+  .sec h2 span{ font-family:"Noto Sans JP"; font-weight:900; font-size:14px; margin-left:8px; }
+  .sec i{ font-style:normal; font-size:12px; font-weight:900; background:#161616; color:#fff; border-radius:999px; padding:1px 10px; }
+  .sec.mine h2{ color:#ff3d7f; }
+  .sec .line{ flex:1; height:3px; background:#161616; border-radius:2px; }
+
+  .grid6{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:16px; }
+  @media (max-width:1100px){ .grid6{ grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); } }
+  .grid3{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:22px; }
+
+  .card{ position:relative; overflow:hidden; background:#fff; border:3px solid #161616; border-radius:16px; box-shadow:6px 6px 0 #161616; display:flex; flex-direction:column; transition:.12s; }
+  .card:hover{ transform:translate(-2px,-2px); box-shadow:8px 8px 0 #161616; }
+  .head{ position:relative; padding:12px 12px 8px; flex:1; min-height:150px; }
+  .name{ position:relative; font-size:30px; line-height:1; margin:0 0 2px; white-space:nowrap; }
+  .name small{ display:block; font-family:"Noto Sans JP"; font-weight:900; font-size:9px; letter-spacing:.18em; color:var(--c); margin-bottom:4px; }
+  /* 文字数で名前を縮める（6列タイル用） */
+  .grid6 .name.len5{ font-size:25px; } .grid6 .name.len6{ font-size:21px; } .grid6 .name.len7{ font-size:18px; }
+  .stats{ position:relative; font-size:11px; color:#666; display:flex; gap:8px; flex-wrap:wrap; }
+  .stats b{ color:#161616; font-weight:900; }
+  .art{ position:absolute; inset:0; pointer-events:none; }
+  .art img{ position:absolute; right:-18%; top:14%; height:96%; width:auto; mix-blend-mode:multiply; opacity:.42; transition:opacity .25s, transform .25s; }
+  .card:hover .art img{ opacity:.9; transform:translateX(-5px) scale(1.03); }
+  .art .ini{ position:absolute; right:-6px; bottom:-26px; font-size:120px; font-weight:900; line-height:1; color:var(--c); opacity:.14; }
+  .card.noimg .head::after{ content:""; position:absolute; inset:0; left:40%; background-image:radial-gradient(var(--c) 1.4px, transparent 1.5px); background-size:12px 12px; opacity:.32;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 45%); mask-image:linear-gradient(90deg,transparent,#000 45%); }
+  .band{ position:relative; background:var(--c); border-top:3px solid #161616; padding:7px; display:flex; flex-direction:column; gap:5px; }
+  .band a{ display:flex; justify-content:space-between; align-items:center; text-decoration:none; font-weight:900; font-size:11.5px; padding:4px 9px; background:#fff; border:2px solid #161616; border-radius:8px; line-height:1.5; }
+  .band a:hover{ background:#161616; color:#fff; }
+  .band a i{ font-style:normal; font-size:10px; opacity:.55; }
+  .band.row{ flex-direction:row; gap:4px; }
+  .band.row a{ flex:1; flex-direction:column; justify-content:center; padding:5px 2px; font-size:10.5px; gap:0; }
+  .band.row a i{ font-size:10px; line-height:1; }
+  .tag{ position:absolute; top:8px; right:8px; font-size:9px; font-weight:900; background:#ff3d7f; color:#fff; border-radius:999px; padding:1px 7px; letter-spacing:.1em; z-index:1; }
+
+  /* ---- Q1 統一6列・縦積みボタン ---- */
+  /* 共通そのまま */
+
+  /* ---- Q2 統一6列・3連ボタン（帯を薄く） ---- */
+  #Q2 .head{ min-height:170px; }
+
+  /* ---- Q3 自キャラは大きく（P1 サイズ）、その他は6列 ---- */
+  #Q3 .big .card{ border-radius:22px; box-shadow:8px 8px 0 #161616; }
+  #Q3 .big .head{ min-height:200px; padding:18px 20px 12px; }
+  #Q3 .big .name{ font-size:54px; }
+  #Q3 .big .name small{ font-size:11px; letter-spacing:.2em; }
+  #Q3 .big .stats{ font-size:12px; gap:12px; }
+  #Q3 .big .art img{ right:-4%; top:-4%; height:110%; }
+  #Q3 .big .art .ini{ font-size:170px; bottom:-40px; }
+  #Q3 .big .band{ padding:12px 14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  #Q3 .big .band a{ display:block; text-align:center; font-size:13px; padding:9px 4px; border-width:3px; border-radius:10px; }
+  #Q3 .big .band a i{ margin-left:4px; }
+  #Q3 .grid6 .head{ min-height:120px; }
+
+  /* ---- Q4 縦書き名前 ---- */
+  #Q4 .head{ min-height:240px; padding:10px; }
+  #Q4 .name{ position:absolute; right:10px; top:10px; writing-mode:vertical-rl; font-size:38px; margin:0; letter-spacing:.04em; }
+  #Q4 .name.len5{ font-size:32px; } #Q4 .name.len6{ font-size:28px; } #Q4 .name.len7{ font-size:24px; }
+  #Q4 .name small{ writing-mode:vertical-rl; display:inline-block; font-size:9px; margin:0 0 6px; letter-spacing:.2em; }
+  #Q4 .stats{ position:absolute; left:10px; bottom:8px; flex-direction:column; gap:0; line-height:1.5; }
+  #Q4 .art img{ right:auto; left:-22%; top:6%; height:100%; }
+  #Q4 .art .ini{ right:auto; left:-10px; bottom:-20px; }
+  #Q4 .card.noimg .head::after{ left:0; right:45%; -webkit-mask-image:linear-gradient(270deg,transparent,#000 45%); mask-image:linear-gradient(270deg,transparent,#000 45%); }
+  #Q4 .tag{ right:auto; left:8px; }
+</style>
+</head>
+<body>
+
+<div id="tabs">
+  <button data-v="Q1" aria-pressed="true"><b>Q1</b>統一6列・縦積みボタン</button>
+  <button data-v="Q2" aria-pressed="false"><b>Q2</b>統一6列・3連ボタン</button>
+  <button data-v="Q3" aria-pressed="false"><b>Q3</b>自キャラは大きく（P1）+ 他は6列</button>
+  <button data-v="Q4" aria-pressed="false"><b>Q4</b>縦書き名前タイル</button>
+</div>
+
+<section id="Q1" class="variant on"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="sec mine"><h2 class="disp">MY CHARACTERS<span>自キャラ</span></h2><i data-n="mine"></i><span class="line"></span></div>
+  <div class="grid6" data-list="mine"></div>
+  <div class="sec"><h2 class="disp">ROSTER<span>その他のキャラ</span></h2><i data-n="rest"></i><span class="line"></span></div>
+  <div class="grid6" data-list="rest"></div>
+  <p class="note">自キャラ・その他とも同じ6列タイル。P1 の構成を縮小し、3ボタンは帯の中に縦積み。名前は 30px、画像は右寄せ 42%。</p>
+</div></section>
+
+<section id="Q2" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="sec mine"><h2 class="disp">MY CHARACTERS<span>自キャラ</span></h2><i data-n="mine"></i><span class="line"></span></div>
+  <div class="grid6" data-list="mine"></div>
+  <div class="sec"><h2 class="disp">ROSTER<span>その他のキャラ</span></h2><i data-n="rest"></i><span class="line"></span></div>
+  <div class="grid6" data-list="rest"></div>
+  <p class="note">3ボタンを横一列（コンボ / 対策 / 参考）にして帯を薄く、その分ヘッドを高くして画像を大きく見せる。</p>
+</div></section>
+
+<section id="Q3" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="sec mine"><h2 class="disp">MY CHARACTERS<span>自キャラ</span></h2><i data-n="mine"></i><span class="line"></span></div>
+  <div class="grid3 big" data-list="mine"></div>
+  <div class="sec"><h2 class="disp">ROSTER<span>その他のキャラ</span></h2><i data-n="rest"></i><span class="line"></span></div>
+  <div class="grid6" data-list="rest"></div>
+  <p class="note">自キャラだけ P1 サイズ（3列）で大きく、その他は6列の小タイル。メインで使うキャラが目立ち、対策用のキャラは一覧として並ぶ。</p>
+</div></section>
+
+<section id="Q4" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="sec mine"><h2 class="disp">MY CHARACTERS<span>自キャラ</span></h2><i data-n="mine"></i><span class="line"></span></div>
+  <div class="grid6" data-list="mine"></div>
+  <div class="sec"><h2 class="disp">ROSTER<span>その他のキャラ</span></h2><i data-n="rest"></i><span class="line"></span></div>
+  <div class="grid6" data-list="rest"></div>
+  <p class="note">名前を縦書きにして右端に立て、画像を左に。狭い幅でも名前が大きく入る。ボタンは縦積み。</p>
+</div></section>
+
+<script>
+const CHARS = [
+  { name:"ラシード", en:"RASHID",  c:"#00c9a7", img:"../../画像/RASHID/images.jpg",  mine:true,  total:10, learned:2, fav:1, up:"9/19", refs:2 },
+  { name:"ケン",     en:"KEN",     c:"#ff4b4b", img:"../../画像/KEN/images (1).jpg", mine:true,  total:0,  learned:0, fav:0, up:"9/15", refs:1 },
+  { name:"春麗",     en:"CHUN-LI", c:"#3b82f6", img:"", mine:false, total:0, learned:0, fav:0, up:"9/10", refs:0 },
+  { name:"ジュリ",   en:"JURI",    c:"#c026d3", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"ルーク",   en:"LUKE",    c:"#f59e0b", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"キャミィ", en:"CAMMY",   c:"#84cc16", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"リュウ",   en:"RYU",     c:"#e11d48", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"ガイル",   en:"GUILE",   c:"#0ea5e9", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"ザンギエフ", en:"ZANGIEF", c:"#dc2626", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"マノン",   en:"MANON",   c:"#a855f7", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"ディージェイ", en:"DEE JAY", c:"#22c55e", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"ジェイミー", en:"JAMIE", c:"#14b8a6", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"A.K.I.",   en:"A.K.I.",  c:"#7c3aed", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 },
+  { name:"エド",     en:"ED",      c:"#2563eb", img:"", mine:false, total:0, learned:0, fav:0, up:"", refs:0 }
+];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const art = ch => '<div class="art">' + (ch.img ? '<img src="' + esc(encodeURI(ch.img)) + '" alt="">' : '<div class="ini">' + esc(ch.name[0]) + '</div>') + '</div>';
+const lenCls = ch => ch.name.length >= 7 ? ' len7' : ch.name.length >= 6 ? ' len6' : ch.name.length >= 5 ? ' len5' : '';
+const nameHtml = ch => '<h2 class="name disp' + lenCls(ch) + '"><small>' + esc(ch.en) + '</small>' + esc(ch.name) + '</h2>';
+const stats = ch => '<div class="stats"><span>ｺﾝﾎﾞ <b>' + (ch.total || "—") + '</b></span><span>習得 <b>' + ch.learned + '</b></span><span>★ <b>' + ch.fav + '</b></span></div>';
+const tag = ch => ch.mine ? '<span class="tag">自キャラ</span>' : '';
+const bandCol = ch => '<div class="band"><a href="#">コンボ記録<i>' + (ch.total || 0) + '</i></a><a href="#">キャラ対策<i>0</i></a><a href="#">参考情報<i>' + ch.refs + '</i></a></div>';
+const bandRow = ch => '<div class="band row"><a href="#">コンボ<i>' + (ch.total || 0) + '</i></a><a href="#">対策<i>0</i></a><a href="#">参考<i>' + ch.refs + '</i></a></div>';
+const bandBig = ch => '<div class="band"><a href="#">コンボ記録<i>' + (ch.total || 0) + '</i></a><a href="#">キャラ対策<i>0</i></a><a href="#">参考情報<i>' + ch.refs + '</i></a></div>';
+const card = (ch, inner) => '<article class="card' + (ch.img ? "" : " noimg") + '" style="--c:' + ch.c + '">' + inner + '</article>';
+const T = {
+  Q1: { mine: ch => tag(ch) + '<div class="head">' + art(ch) + nameHtml(ch) + stats(ch) + '</div>' + bandCol(ch), rest: null },
+  Q2: { mine: ch => tag(ch) + '<div class="head">' + art(ch) + nameHtml(ch) + stats(ch) + '</div>' + bandRow(ch), rest: null },
+  Q3: { mine: ch => tag(ch) + '<div class="head">' + art(ch) + nameHtml(ch) + stats(ch) + '</div>' + bandBig(ch),
+        rest: ch => '<div class="head">' + art(ch) + nameHtml(ch) + stats(ch) + '</div>' + bandRow(ch) },
+  Q4: { mine: ch => tag(ch) + '<div class="head">' + art(ch) + nameHtml(ch) + stats(ch) + '</div>' + bandCol(ch), rest: null }
+};
+for (const id in T){
+  const sec = document.getElementById(id);
+  const mine = CHARS.filter(c => c.mine), rest = CHARS.filter(c => !c.mine);
+  sec.querySelector('[data-list="mine"]').innerHTML = mine.map(ch => card(ch, T[id].mine(ch))).join("");
+  sec.querySelector('[data-list="rest"]').innerHTML = rest.map(ch => card(ch, (T[id].rest || T[id].mine)(ch))).join("");
+  sec.querySelector('[data-n="mine"]').textContent = mine.length;
+  sec.querySelector('[data-n="rest"]').textContent = rest.length;
+}
+function showVariant(id){
+  document.querySelectorAll("#tabs button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === id)));
+  document.querySelectorAll(".variant").forEach(v => v.classList.toggle("on", v.id === id));
+  location.hash = id; window.scrollTo(0, 0);
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => showVariant(b.dataset.v));
+if (/^#Q[1-4]$/.test(location.hash)) showVariant(location.hash.slice(1));
+</script>
+</body></html>

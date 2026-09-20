@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ポータル デザイン案 C派生（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{ margin:0; background:#f6f3ee; color:#161616; font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.6; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+
+  /* モック専用タブ */
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; background:#161616; color:#fff; font-size:12.5px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 6px; background:#161616; color:#999; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#ff3d7f; }
+  #tabs b{ font-weight:900; margin-right:5px; }
+  .variant{ display:none; min-height:100vh; padding-top:44px; }
+  .variant.on{ display:block; }
+  .note{ font-size:12.5px; color:#666; margin:18px 0 0; }
+  [hidden]{ display:none !important; }
+
+  /* ---- C 共通（前回の C 案をそのまま基礎にする） ---- */
+  .wrap{ max-width:1240px; margin:0 auto; padding:44px 20px 80px; }
+  header{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-bottom:22px; }
+  h1{ margin:0; font-size:clamp(56px,10vw,104px); line-height:.9; }
+  h1 em{ font-style:normal; color:#ff3d7f; }
+  .search input{ font:inherit; font-size:15px; padding:12px 18px; border-radius:16px; border:3px solid #161616; background:#fff; min-width:280px; box-shadow:5px 5px 0 #161616; }
+  .recent{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:26px; font-size:13px; }
+  .recent .k{ font-weight:900; margin-right:6px; }
+  .recent span:not(.k){ background:#fff; border:2px solid #161616; border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 #161616; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:22px; }
+  .card{ position:relative; overflow:hidden; background:#fff; border:3px solid #161616; border-radius:22px; box-shadow:8px 8px 0 #161616; padding:20px 20px 16px; transition:.12s; }
+  .card:hover{ transform:translate(-2px,-2px); box-shadow:10px 10px 0 #161616; }
+  .card.open{ grid-column:1/-1; }
+  .name{ position:relative; font-size:46px; line-height:1; margin:0 0 4px; }
+  .name small{ display:block; font-family:"Noto Sans JP"; font-weight:900; font-size:11px; letter-spacing:.2em; color:var(--c); margin-bottom:6px; }
+  .stats{ position:relative; display:flex; gap:12px; font-size:12px; color:#666; margin:0 0 16px; }
+  .stats b{ color:#161616; font-weight:900; }
+  .menu{ position:relative; display:flex; flex-direction:column; gap:8px; }
+  .menu a{ display:flex; justify-content:space-between; align-items:center; text-decoration:none; font-weight:900; font-size:14px; padding:10px 14px; border:3px solid #161616; border-radius:12px; background:#fff; transition:.1s; }
+  .menu a:hover{ background:var(--c); }
+  .menu a i{ font-style:normal; font-size:11px; background:#161616; color:#fff; border-radius:999px; padding:1px 8px; }
+  .refs{ position:relative; margin-top:16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
+  .ref-item{ background:#f6f3ee; border:2px solid #161616; border-radius:12px; padding:10px 12px; font-size:13.5px; }
+  .ref-item a{ color:#0066ff; font-size:12px; word-break:break-all; }
+  .ref-item .d{ color:#888; font-size:11px; margin-left:6px; }
+
+  /* キャラ画像: 白背景の画像は multiply で白が消える。既定は薄く、ホバーで浮かび上がる */
+  .art{ position:absolute; inset:0; pointer-events:none; }
+  .art img{ position:absolute; right:-6%; bottom:-6%; height:118%; width:auto; mix-blend-mode:multiply; opacity:.20; transition:opacity .25s, transform .25s; }
+  .card:hover .art img{ opacity:.60; transform:translateX(-4px); }
+  .art .ini{ position:absolute; right:6px; bottom:-26px; font-size:150px; font-weight:900; line-height:1; color:var(--c); opacity:.10; }
+  .blob{ position:absolute; width:220px; height:220px; border-radius:50%; background:var(--c); right:-70px; top:-90px; opacity:.9; }
+  .blob2{ position:absolute; width:90px; height:90px; border-radius:50%; background:var(--c); left:-30px; bottom:-40px; opacity:.35; }
+
+  /* ---- C1: クラシック + 画像 ---- */
+  #C1 .blob{ opacity:.75; }
+  #C1 .art img{ right:-4%; bottom:-10%; height:112%; }
+
+  /* ---- C2: ポスター（画像を主役に、ボタンは横並びの帯） ---- */
+  #C2 .grid{ grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); }
+  #C2 .card{ min-height:380px; padding:0; display:flex; flex-direction:column; }
+  #C2 .card .head{ position:relative; padding:20px 20px 0; flex:1; }
+  #C2 .name{ font-size:56px; }
+  #C2 .art img{ right:-8%; bottom:auto; top:8%; height:100%; opacity:.42; }
+  #C2 .card:hover .art img{ opacity:.9; transform:translateX(-6px) scale(1.02); }
+  #C2 .band{ position:relative; background:var(--c); border-top:3px solid #161616; padding:12px 14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  #C2 .band a{ display:block; text-align:center; text-decoration:none; font-weight:900; font-size:13px; padding:9px 4px; background:#fff; border:3px solid #161616; border-radius:10px; }
+  #C2 .band a:hover{ background:#161616; color:#fff; }
+  #C2 .band a i{ font-style:normal; font-size:10px; margin-left:4px; opacity:.6; }
+  #C2 .refs{ padding:0 16px 16px; margin-top:0; }
+  #C2 .blob{ display:none; } #C2 .blob2{ display:none; }
+
+  /* ---- C3: ロスター（横長。画像はキャラ色の円に収める） ---- */
+  #C3 .grid{ grid-template-columns:repeat(auto-fill,minmax(440px,1fr)); gap:18px; }
+  #C3 .card{ display:grid; grid-template-columns:128px 1fr; gap:18px; padding:16px; align-items:center; }
+  #C3 .disc{ width:128px; height:128px; border-radius:50%; background:var(--c); border:3px solid #161616; overflow:hidden; position:relative; box-shadow:4px 4px 0 #161616; }
+  #C3 .disc img{ width:100%; height:100%; object-fit:cover; object-position:center 15%; mix-blend-mode:multiply; transform:scale(1.15); transition:.25s; }
+  #C3 .card:hover .disc img{ transform:scale(1.3); }
+  #C3 .disc .ini{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:64px; font-weight:900; color:#fff; opacity:.9; }
+  #C3 .name{ font-size:40px; }
+  #C3 .stats{ margin-bottom:10px; }
+  #C3 .menu{ flex-direction:row; flex-wrap:wrap; }
+  #C3 .menu a{ flex:1 1 110px; font-size:13px; padding:8px 12px; }
+  #C3 .art{ display:none; } #C3 .blob{ display:none; } #C3 .blob2{ display:none; }
+  #C3 .card.open{ grid-template-columns:128px 1fr; }
+  #C3 .refs{ grid-column:1/-1; }
+
+  /* ---- C4: ソフト（黒線なし、キャラ色の淡い下地、柔らかい影） ---- */
+  #C4{ background:#f9f7f3; }
+  #C4 .card{ border:0; border-radius:26px; box-shadow:0 12px 34px rgba(22,22,22,.10); background:color-mix(in srgb,var(--c) 10%,#fff); }
+  #C4 .card:hover{ box-shadow:0 18px 44px rgba(22,22,22,.16); }
+  #C4 .blob{ opacity:.35; filter:blur(2px); } #C4 .blob2{ opacity:.2; }
+  #C4 .menu a{ border:0; background:#fff; box-shadow:0 2px 8px rgba(22,22,22,.08); font-weight:700; }
+  #C4 .menu a:hover{ background:var(--c); color:#fff; }
+  #C4 .menu a i{ background:color-mix(in srgb,var(--c) 85%,#000); }
+  #C4 .art img{ opacity:.16; }
+  #C4 .card:hover .art img{ opacity:.5; }
+  #C4 .search input, #C4 .recent span:not(.k){ box-shadow:none; border-width:2px; }
+  #C4 .ref-item{ border:0; background:#fff; box-shadow:0 2px 8px rgba(22,22,22,.06); }
+
+  /* ---- C5: ビビッド（カード全面をキャラ色に。画像はさらに強く出す） ---- */
+  #C5 .card{ background:var(--c); color:#fff; }
+  #C5 .name{ color:#fff; text-shadow:3px 3px 0 #161616; }
+  #C5 .name small{ color:#161616; text-shadow:none; }
+  #C5 .stats{ color:rgba(255,255,255,.85); } #C5 .stats b{ color:#fff; }
+  #C5 .menu a{ color:#161616; }
+  #C5 .menu a:hover{ background:#161616; color:#fff; }
+  #C5 .blob{ background:#fff; opacity:.18; } #C5 .blob2{ background:#fff; opacity:.12; }
+  #C5 .art img{ opacity:.45; mix-blend-mode:multiply; }
+  #C5 .card:hover .art img{ opacity:.85; }
+  #C5 .art .ini{ color:#fff; opacity:.14; }
+  #C5 .ref-item{ background:#fff; color:#161616; }
+</style>
+</head>
+<body>
+
+<div id="tabs">
+  <button data-v="C1" aria-pressed="true"><b>C1</b>クラシック + 画像</button>
+  <button data-v="C2" aria-pressed="false"><b>C2</b>ポスター</button>
+  <button data-v="C3" aria-pressed="false"><b>C3</b>ロスター（横長）</button>
+  <button data-v="C4" aria-pressed="false"><b>C4</b>ソフト</button>
+  <button data-v="C5" aria-pressed="false"><b>C5</b>ビビッド</button>
+</div>
+
+<section id="C1" class="variant on"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">前回の C をそのまま。右下に画像を乗算 20% で敷き、ホバーで 60% に浮かび上がる。画像のないキャラは頭文字の透かし。</p>
+</div></section>
+
+<section id="C2" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">画像を主役に（40%、ホバーで 90%）。下のキャラ色の帯に3ボタンを横並び。カードが縦長になる分、1行のキャラ数は減る。</p>
+</div></section>
+
+<section id="C3" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">横長カード。画像はキャラ色の円の中に収めて「アイコン」として使う（乗算で白背景がキャラ色になる）。2列で26キャラでも縦に長くなりすぎない。</p>
+</div></section>
+
+<section id="C4" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">C の黒い太線と硬い影をやめ、キャラ色を 10% 混ぜた淡いカードと柔らかい影に。画像は 16%。落ち着いた印象。</p>
+</div></section>
+
+<section id="C5" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">カード全面をキャラ色に。画像は乗算 45% で色に溶け込み、ホバーで 85%。最も鮮やか。文字は白＋黒影で可読性を確保。</p>
+</div></section>
+
+<script>
+const CHARS = [
+  { name:"ラシード", en:"RASHID",  c:"#00c9a7", img:"../../画像/RASHID/images.jpg",    total:10, learned:2, fav:1, up:"9/19",
+    refs:[ { text:"基礎コンボと起き攻めの解説動画。12:30 から中スパイク〆の話。", url:"https://youtu.be/xxxxxxx", d:"9/19" },
+           { text:"フレームデータ表（公式）", url:"https://example.com/frames/rashid", d:"9/10" } ] },
+  { name:"ケン",     en:"KEN",     c:"#ff4b4b", img:"../../画像/KEN/images (1).jpg",   total:0, learned:0, fav:0, up:"9/15",
+    refs:[ { text:"迅雷脚の派生一覧と対処", url:"https://youtu.be/yyyyyyy", d:"9/15" } ] },
+  { name:"春麗",     en:"CHUN-LI", c:"#3b82f6", img:"", total:0, learned:0, fav:0, up:"9/10", refs:[] },
+  { name:"ジュリ",   en:"JURI",    c:"#c026d3", img:"", total:0, learned:0, fav:0, up:"", refs:[] },
+  { name:"ルーク",   en:"LUKE",    c:"#f59e0b", img:"", total:0, learned:0, fav:0, up:"", refs:[] },
+  { name:"キャミィ", en:"CAMMY",   c:"#84cc16", img:"", total:0, learned:0, fav:0, up:"", refs:[] }
+];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const refsHtml = ch => ch.refs.length
+  ? ch.refs.map(r => '<div class="ref-item"><p style="margin:0 0 6px">' + esc(r.text) + '</p><a href="' + esc(r.url) + '" target="_blank">' + esc(r.url) + '</a><span class="d">' + esc(r.d) + '</span></div>').join("")
+  : '<div class="ref-item" style="opacity:.6">参考情報はまだありません。「参考情報」→ 追加 で登録</div>';
+const art = ch => '<div class="art">' + (ch.img
+  ? '<img src="' + esc(encodeURI(ch.img)) + '" alt="">'
+  : '<div class="ini">' + esc(ch.name[0]) + '</div>') + '</div>';
+const stats = ch => '<div class="stats"><span>コンボ <b>' + (ch.total || "—") + '</b></span><span>習得 <b>' + ch.learned + '</b></span><span>★ <b>' + ch.fav + '</b></span><span>更新 <b>' + (ch.up || "—") + '</b></span></div>';
+const nameHtml = ch => '<h2 class="name disp"><small>' + esc(ch.en) + '</small>' + esc(ch.name) + '</h2>';
+const menu = ch => '<div class="menu"><a href="#">コンボ記録 <i>' + (ch.total || 0) + '</i></a><a href="#">キャラ対策 <i>0</i></a><a href="#" data-toggle>参考情報 <i>' + ch.refs.length + '</i></a></div>';
+
+const T = {
+  C1: ch => '<div class="blob"></div><div class="blob2"></div>' + art(ch) + nameHtml(ch) + stats(ch) + menu(ch) + '<div class="refs" hidden>' + refsHtml(ch) + '</div>',
+  C2: ch => art(ch) + '<div class="head">' + nameHtml(ch) + stats(ch) + '</div>' +
+            '<div class="refs" hidden>' + refsHtml(ch) + '</div>' +
+            '<div class="band"><a href="#">コンボ記録<i>' + (ch.total || 0) + '</i></a><a href="#">キャラ対策<i>0</i></a><a href="#" data-toggle>参考情報<i>' + ch.refs.length + '</i></a></div>',
+  C3: ch => '<div class="disc">' + (ch.img ? '<img src="' + esc(encodeURI(ch.img)) + '" alt="">' : '<div class="ini">' + esc(ch.name[0]) + '</div>') + '</div>' +
+            '<div>' + nameHtml(ch) + stats(ch) + menu(ch) + '</div><div class="refs" hidden>' + refsHtml(ch) + '</div>',
+  C4: ch => '<div class="blob"></div><div class="blob2"></div>' + art(ch) + nameHtml(ch) + stats(ch) + menu(ch) + '<div class="refs" hidden>' + refsHtml(ch) + '</div>',
+  C5: ch => '<div class="blob"></div><div class="blob2"></div>' + art(ch) + nameHtml(ch) + stats(ch) + menu(ch) + '<div class="refs" hidden>' + refsHtml(ch) + '</div>'
+};
+for (const id in T){
+  document.querySelector("#" + id + " .grid").innerHTML = CHARS.map(ch =>
+    '<article class="card" style="--c:' + ch.c + '">' + T[id](ch) + '</article>').join("");
+}
+document.querySelectorAll("[data-toggle]").forEach(a => a.addEventListener("click", e => {
+  e.preventDefault();
+  const card = a.closest(".card"), refs = card.querySelector(".refs");
+  const open = refs.hidden;
+  card.parentElement.querySelectorAll(".card").forEach(c => { c.classList.remove("open"); c.querySelector(".refs").hidden = true; });
+  if (open){ card.classList.add("open"); refs.hidden = false; }
+}));
+function showVariant(id){
+  document.querySelectorAll("#tabs button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === id)));
+  document.querySelectorAll(".variant").forEach(v => v.classList.toggle("on", v.id === id));
+  location.hash = id; window.scrollTo(0, 0);
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => showVariant(b.dataset.v));
+if (/^#C[1-5]$/.test(location.hash)) showVariant(location.hash.slice(1));
+</script>
+</body></html>

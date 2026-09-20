@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ポータル デザイン案 C2 改良（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#f6f3ee; color:#161616; font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.6; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; background:#161616; color:#fff; font-size:12.5px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 6px; background:#161616; color:#999; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#ff3d7f; }
+  #tabs b{ font-weight:900; margin-right:5px; }
+  .variant{ display:none; min-height:100vh; padding-top:44px; }
+  .variant.on{ display:block; }
+  .note{ font-size:12.5px; color:#666; margin:18px 0 0; }
+  [hidden]{ display:none !important; }
+
+  /* ---- 共通（C2 の骨格） ---- */
+  .wrap{ max-width:1240px; margin:0 auto; padding:44px 20px 80px; }
+  header{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-bottom:22px; }
+  h1{ margin:0; font-size:clamp(56px,10vw,104px); line-height:.9; }
+  h1 em{ font-style:normal; color:#ff3d7f; }
+  .search input{ font:inherit; font-size:15px; padding:12px 18px; border-radius:16px; border:3px solid #161616; background:#fff; min-width:280px; box-shadow:5px 5px 0 #161616; }
+  .recent{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:26px; font-size:13px; }
+  .recent .k{ font-weight:900; margin-right:6px; }
+  .recent span:not(.k){ background:#fff; border:2px solid #161616; border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 #161616; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:22px; }
+  .card{ position:relative; overflow:hidden; background:#fff; border:3px solid #161616; border-radius:22px; box-shadow:8px 8px 0 #161616; padding:0; display:flex; flex-direction:column; transition:.12s; }
+  .card:hover{ transform:translate(-2px,-2px); box-shadow:10px 10px 0 #161616; }
+  .card.open{ grid-column:1/-1; }
+  .head{ position:relative; padding:18px 20px 14px; flex:1; }
+  .name{ position:relative; font-size:54px; line-height:1; margin:0 0 4px; }
+  .name small{ display:block; font-family:"Noto Sans JP"; font-weight:900; font-size:11px; letter-spacing:.2em; color:var(--c); margin-bottom:6px; }
+  .stats{ position:relative; display:flex; gap:12px; font-size:12px; color:#666; }
+  .stats b{ color:#161616; font-weight:900; }
+  .band{ position:relative; background:var(--c); border-top:3px solid #161616; padding:12px 14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .band a{ display:block; text-align:center; text-decoration:none; font-weight:900; font-size:13px; padding:9px 4px; background:#fff; border:3px solid #161616; border-radius:10px; }
+  .band a:hover{ background:#161616; color:#fff; }
+  .band a i{ font-style:normal; font-size:10px; margin-left:4px; opacity:.6; }
+  .refs{ position:relative; padding:0 16px 16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
+  .ref-item{ background:#f6f3ee; border:2px solid #161616; border-radius:12px; padding:10px 12px; font-size:13.5px; }
+  .ref-item a{ color:#0066ff; font-size:12px; word-break:break-all; }
+  .ref-item .d{ color:#888; font-size:11px; margin-left:6px; }
+  .art{ position:absolute; inset:0; pointer-events:none; }
+  .art img{ position:absolute; right:-8%; top:0; height:100%; width:auto; mix-blend-mode:multiply; opacity:.42; transition:opacity .25s, transform .25s; }
+  .card:hover .art img{ opacity:.9; transform:translateX(-6px) scale(1.02); }
+  .art .ini{ position:absolute; right:-4px; bottom:-40px; font-size:170px; font-weight:900; line-height:1; color:var(--c); opacity:.14; }
+  /* 画像なしキャラの余白対策: キャラ色のドット柄 */
+  .card.noimg .head::after{ content:""; position:absolute; inset:0; left:45%; background-image:radial-gradient(var(--c) 1.6px, transparent 1.7px); background-size:14px 14px; opacity:.35;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 40%); mask-image:linear-gradient(90deg,transparent,#000 40%); }
+
+  /* ---- P1 コンパクト: 高さを詰め、画像が右半分を占める ---- */
+  #P1 .head{ min-height:200px; }
+  #P1 .art img{ right:-4%; top:-4%; height:110%; }
+  #P1 .stats{ margin-top:6px; }
+
+  /* ---- P2 カラー下地: 上部を白→キャラ色のグラデにして白を残さない ---- */
+  #P2 .head{ min-height:250px; background:linear-gradient(170deg,#fff 30%,color-mix(in srgb,var(--c) 28%,#fff) 100%); }
+  #P2 .head::before{ content:""; position:absolute; width:260px; height:260px; border-radius:50%; background:var(--c); opacity:.55; right:-80px; bottom:-120px; }
+  #P2 .art img{ opacity:.5; }
+  #P2 .card.noimg .head::after{ display:none; }
+
+  /* ---- P3 対角カット: 右側をキャラ色の斜め面にし、画像をその上に置く ---- */
+  #P3 .head{ min-height:250px; }
+  #P3 .head::before{ content:""; position:absolute; inset:0; background:var(--c); clip-path:polygon(58% 0, 100% 0, 100% 100%, 38% 100%); }
+  #P3 .art img{ right:-6%; top:0; height:104%; opacity:.6; }
+  #P3 .card:hover .art img{ opacity:1; }
+  #P3 .art .ini{ color:#fff; opacity:.35; right:4px; }
+  #P3 .band{ background:#161616; }
+  #P3 .band a:hover{ background:var(--c); color:#161616; }
+  #P3 .card.noimg .head::after{ display:none; }
+
+  /* ---- P4 横型: 左に文字とボタン、右にキャラ色の画像パネル ---- */
+  #P4 .grid{ grid-template-columns:repeat(auto-fill,minmax(460px,1fr)); }
+  #P4 .card{ flex-direction:row; min-height:230px; }
+  #P4 .head{ flex:1 1 55%; padding:18px 18px 16px; display:flex; flex-direction:column; }
+  #P4 .name{ font-size:46px; }
+  #P4 .stats{ margin:2px 0 12px; }
+  #P4 .menu{ display:flex; flex-direction:column; gap:7px; margin-top:auto; }
+  #P4 .menu a{ display:flex; justify-content:space-between; align-items:center; text-decoration:none; font-weight:900; font-size:13px; padding:7px 12px; border:3px solid #161616; border-radius:10px; background:#fff; }
+  #P4 .menu a:hover{ background:var(--c); }
+  #P4 .menu a i{ font-style:normal; font-size:11px; background:#161616; color:#fff; border-radius:999px; padding:1px 8px; }
+  #P4 .panel{ position:relative; flex:0 0 45%; background:var(--c); border-left:3px solid #161616; overflow:hidden; }
+  #P4 .panel img{ position:absolute; left:50%; top:50%; height:112%; width:auto; transform:translate(-50%,-50%); mix-blend-mode:multiply; opacity:.75; transition:.25s; }
+  #P4 .card:hover .panel img{ opacity:1; transform:translate(-50%,-50%) scale(1.06); }
+  #P4 .panel .ini{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:120px; font-weight:900; color:#fff; opacity:.9; }
+  #P4 .refs{ flex-basis:100%; grid-column:1/-1; padding:0 16px 16px; }
+  #P4 .card.open{ flex-wrap:wrap; }
+  #P4 .art, #P4 .band{ display:none; }
+  #P4 .card.noimg .head::after{ display:none; }
+</style>
+</head>
+<body>
+
+<div id="tabs">
+  <button data-v="P1" aria-pressed="true"><b>P1</b>コンパクト（高さを詰める）</button>
+  <button data-v="P2" aria-pressed="false"><b>P2</b>カラー下地（グラデ）</button>
+  <button data-v="P3" aria-pressed="false"><b>P3</b>対角カット</button>
+  <button data-v="P4" aria-pressed="false"><b>P4</b>横型（画像パネル）</button>
+</div>
+
+<section id="P1" class="variant on"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">C2 のまま高さを 380→約 260px に。画像が右半分いっぱいに出るので白が減る。画像なしキャラは頭文字 + キャラ色のドット柄。</p>
+</div></section>
+
+<section id="P2" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">上部を白→キャラ色の淡いグラデにし、右下にキャラ色の円。白い面が残らない。画像はグラデの上で乗算 50%。</p>
+</div></section>
+
+<section id="P3" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">右側を斜めにキャラ色で塗り、画像をその上に。文字側だけが白。ボタン帯は黒にしてキャラ色と競合させない。</p>
+</div></section>
+
+<section id="P4" class="variant"><div class="wrap">
+  <header><h1 class="disp">SF6 <em>PORTAL</em></h1><div class="search"><input type="text" placeholder="キャラを検索"></div></header>
+  <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+  <div class="grid"></div>
+  <p class="note">横型。左に名前と縦3ボタン、右はキャラ色の画像パネル（全面色なので白はゼロ）。2列で一覧性も高い。</p>
+</div></section>
+
+<script>
+const CHARS = [
+  { name:"ラシード", en:"RASHID",  c:"#00c9a7", img:"../../画像/RASHID/images.jpg",  total:10, learned:2, fav:1, up:"9/19",
+    refs:[ { text:"基礎コンボと起き攻めの解説動画。12:30 から中スパイク〆の話。", url:"https://youtu.be/xxxxxxx", d:"9/19" },
+           { text:"フレームデータ表（公式）", url:"https://example.com/frames/rashid", d:"9/10" } ] },
+  { name:"ケン",     en:"KEN",     c:"#ff4b4b", img:"../../画像/KEN/images (1).jpg", total:0, learned:0, fav:0, up:"9/15",
+    refs:[ { text:"迅雷脚の派生一覧と対処", url:"https://youtu.be/yyyyyyy", d:"9/15" } ] },
+  { name:"春麗",     en:"CHUN-LI", c:"#3b82f6", img:"", total:0, learned:0, fav:0, up:"9/10", refs:[] },
+  { name:"ジュリ",   en:"JURI",    c:"#c026d3", img:"", total:0, learned:0, fav:0, up:"", refs:[] },
+  { name:"ルーク",   en:"LUKE",    c:"#f59e0b", img:"", total:0, learned:0, fav:0, up:"", refs:[] },
+  { name:"キャミィ", en:"CAMMY",   c:"#84cc16", img:"", total:0, learned:0, fav:0, up:"", refs:[] }
+];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const refsHtml = ch => ch.refs.length
+  ? ch.refs.map(r => '<div class="ref-item"><p style="margin:0 0 6px">' + esc(r.text) + '</p><a href="' + esc(r.url) + '" target="_blank">' + esc(r.url) + '</a><span class="d">' + esc(r.d) + '</span></div>').join("")
+  : '<div class="ref-item" style="opacity:.6">参考情報はまだありません。「参考情報」→ 追加 で登録</div>';
+const imgTag = ch => '<img src="' + esc(encodeURI(ch.img)) + '" alt="">';
+const art = ch => '<div class="art">' + (ch.img ? imgTag(ch) : '<div class="ini">' + esc(ch.name[0]) + '</div>') + '</div>';
+const nameHtml = ch => '<h2 class="name disp"><small>' + esc(ch.en) + '</small>' + esc(ch.name) + '</h2>';
+const stats = ch => '<div class="stats"><span>コンボ <b>' + (ch.total || "—") + '</b></span><span>習得 <b>' + ch.learned + '</b></span><span>★ <b>' + ch.fav + '</b></span><span>更新 <b>' + (ch.up || "—") + '</b></span></div>';
+const band = ch => '<div class="band"><a href="#">コンボ記録<i>' + (ch.total || 0) + '</i></a><a href="#">キャラ対策<i>0</i></a><a href="#" data-toggle>参考情報<i>' + ch.refs.length + '</i></a></div>';
+const std = ch => '<div class="head">' + art(ch) + nameHtml(ch) + stats(ch) + '</div><div class="refs" hidden>' + refsHtml(ch) + '</div>' + band(ch);
+const T = {
+  P1: std, P2: std, P3: std,
+  P4: ch => '<div class="head">' + nameHtml(ch) + stats(ch) +
+            '<div class="menu"><a href="#">コンボ記録 <i>' + (ch.total || 0) + '</i></a><a href="#">キャラ対策 <i>0</i></a><a href="#" data-toggle>参考情報 <i>' + ch.refs.length + '</i></a></div></div>' +
+            '<div class="panel">' + (ch.img ? imgTag(ch) : '<div class="ini">' + esc(ch.name[0]) + '</div>') + '</div>' +
+            '<div class="refs" hidden>' + refsHtml(ch) + '</div>'
+};
+for (const id in T){
+  document.querySelector("#" + id + " .grid").innerHTML = CHARS.map(ch =>
+    '<article class="card' + (ch.img ? "" : " noimg") + '" style="--c:' + ch.c + '">' + T[id](ch) + '</article>').join("");
+}
+document.querySelectorAll("[data-toggle]").forEach(a => a.addEventListener("click", e => {
+  e.preventDefault();
+  const card = a.closest(".card"), refs = card.querySelector(".refs");
+  const open = refs.hidden;
+  card.parentElement.querySelectorAll(".card").forEach(c => { c.classList.remove("open"); c.querySelector(".refs").hidden = true; });
+  if (open){ card.classList.add("open"); refs.hidden = false; }
+}));
+function showVariant(id){
+  document.querySelectorAll("#tabs button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === id)));
+  document.querySelectorAll(".variant").forEach(v => v.classList.toggle("on", v.id === id));
+  location.hash = id; window.scrollTo(0, 0);
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => showVariant(b.dataset.v));
+if (/^#P[1-4]$/.test(location.hash)) showVariant(location.hash.slice(1));
+</script>
+</body></html>

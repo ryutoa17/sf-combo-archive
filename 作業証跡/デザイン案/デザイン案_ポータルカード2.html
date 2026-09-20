@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ポータルカード 全面画像デザイン案（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Russo+One&family=Teko:wght@500;700&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f6f3ee; --ink:#161616; --char:#1f2026; --mute:#666; --pink:#ff3d7f; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.6; }
+  a{ color:inherit; text-decoration:none; }
+  .bebas{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.03em; }
+  .russo{ font-family:"Russo One","Noto Sans JP",sans-serif; }
+  .teko{ font-family:"Teko","Noto Sans JP",sans-serif; font-weight:700; letter-spacing:.02em; }
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; background:#161616; color:#fff; font-size:12.5px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 6px; background:#161616; color:#999; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#ff3d7f; }
+  #tabs b{ font-weight:900; margin-right:5px; }
+  .bg{ position:fixed; inset:0; z-index:0; pointer-events:none; background:url("../../画像/RASHID/y_64a3cd87d8348.jpg") center/cover no-repeat; opacity:.45; mix-blend-mode:multiply; }
+  .page{ position:relative; z-index:1; padding:64px 20px 80px; max-width:1240px; margin:0 auto; }
+  h1{ margin:0 0 6px; font-size:72px; line-height:.9; font-family:"Bebas Neue"; }
+  h1 em{ font-style:normal; color:var(--pink); }
+  .sec{ display:flex; align-items:baseline; gap:12px; margin:22px 0 12px; }
+  .sec h2{ margin:0; font-size:32px; line-height:1; font-family:"Bebas Neue"; }
+  .sec h2 span{ font-family:"Noto Sans JP"; font-weight:900; font-size:13px; margin-left:8px; }
+  .sec.mine h2{ color:var(--pink); }
+  .sec .line{ flex:1; height:3px; background:var(--ink); border-radius:2px; }
+  .grid3{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:24px; }
+  .grid6{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:18px; }
+  .note{ font-size:12.5px; color:#333; margin:26px 0 0; background:rgba(255,255,255,.75); padding:10px 14px; border-radius:10px; }
+
+  /* 共通: 画像レイヤー（無いキャラはキャラ色 + 斜線） */
+  .card{ position:relative; overflow:hidden; border:3px solid var(--ink); box-shadow:7px 7px 0 var(--ink); display:flex; flex-direction:column; color:#fff; }
+  .pic{ position:absolute; inset:0; background:var(--img, none) center/cover no-repeat; background-color:var(--c); }
+  .card.noimg .pic{ background-image:repeating-linear-gradient(-45deg,rgba(0,0,0,.18) 0 10px,transparent 10px 26px); }
+  .card.noimg .pic::after{ content:attr(data-ini); position:absolute; right:-6px; bottom:-30px; font-family:"Bebas Neue"; font-size:190px; line-height:1; color:rgba(255,255,255,.14); }
+  .nm{ position:absolute; right:16px; bottom:10px; margin:0; font-size:56px; line-height:1; color:#fff; text-align:right; text-shadow:2px 2px 0 rgba(0,0,0,.5); z-index:2; }
+  .nm small{ display:block; font-family:"Noto Sans JP"; font-weight:900; font-size:10px; letter-spacing:.3em; opacity:.85; }
+  .st{ position:absolute; left:16px; top:14px; font-size:11.5px; color:rgba(255,255,255,.85); display:flex; gap:10px; z-index:2; text-shadow:1px 1px 0 rgba(0,0,0,.6); }
+  .st b{ color:#fff; font-weight:900; }
+  .face{ position:relative; min-height:230px; }
+  .tile .face{ min-height:130px; }
+  .tile .nm{ font-size:28px; right:10px; bottom:6px; }
+  .tile .nm small{ display:none; }
+  .band{ position:relative; z-index:2; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; padding:12px 14px; background:var(--char); border-top:3px solid var(--ink); }
+  .band a{ display:block; text-align:center; font-family:"Bebas Neue"; font-size:20px; letter-spacing:.04em; padding:8px 4px; border-radius:10px; color:#fff; border:2px solid rgba(255,255,255,.7); }
+  .tile .band{ padding:7px; gap:4px; }
+  .tile .band a{ font-size:13px; letter-spacing:.02em; padding:4px 1px; border-radius:8px; white-space:nowrap; }
+  .band a i{ font-style:normal; font-size:13px; opacity:.7; margin-left:2px; }
+
+  /* ======== F1 下グラデ（画像 → 下に向かって暗く、名前は右下、帯は下） ======== */
+  body.F1 .pic::before{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,0) 40%,rgba(0,0,0,.72) 100%); }
+  body.F1 .card{ border-radius:18px; }
+
+  /* ======== F2 全面画像 + オーバーレイ（帯も画像の上、ボタンは半透明） ======== */
+  body.F2 .card{ border-radius:18px; }
+  body.F2 .pic::before{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,.05) 30%,rgba(0,0,0,.78) 100%); }
+  body.F2 .band{ background:transparent; border-top:0; padding-top:0; }
+  body.F2 .band a{ background:rgba(0,0,0,.45); backdrop-filter:blur(4px); border-color:rgba(255,255,255,.55); }
+  body.F2 .nm{ bottom:auto; top:14px; right:16px; }
+  body.F2 .st{ top:20px; left:16px; }
+  body.F2 .tile .nm{ top:8px; }
+  body.F2 .face{ min-height:190px; }
+  body.F2 .tile .face{ min-height:96px; }
+
+  /* ======== F3 斜めの名前帯（右下に炭色の斜め面、名前を白で） ======== */
+  body.F3 .card{ border-radius:6px; }
+  body.F3 .face::after{ content:""; position:absolute; right:0; bottom:0; width:70%; height:58%; background:var(--char); clip-path:polygon(28% 0,100% 0,100% 100%,0 100%); opacity:.92; z-index:1; }
+  body.F3 .face::before{ content:""; position:absolute; right:0; bottom:0; width:70%; height:58%; background:var(--c); clip-path:polygon(28% 0,32% 0,4% 100%,0 100%); z-index:1; }
+  body.F3 .nm{ text-shadow:none; }
+  body.F3 .st{ left:auto; right:16px; top:14px; }
+  body.F3 .tile .face::after, body.F3 .tile .face::before{ width:80%; height:62%; }
+
+  /* ======== F4 デュオトーン（画像をグレースケール + キャラ色で染める。名前は Russo One） ======== */
+  body.F4 .card{ border-radius:14px; }
+  body.F4 .card:not(.noimg) .pic{ filter:grayscale(1) contrast(1.1); }
+  body.F4 .pic::before{ content:""; position:absolute; inset:0; background:var(--c); mix-blend-mode:multiply; opacity:.75; }
+  body.F4 .pic::after{ content:""; position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.55),transparent 55%); }
+  body.F4 .card.noimg .pic::after{ content:attr(data-ini); }
+  body.F4 .nm{ font-family:"Russo One","Noto Sans JP",sans-serif; font-size:40px; letter-spacing:.02em; text-shadow:3px 3px 0 rgba(0,0,0,.45); }
+  body.F4 .tile .nm{ font-size:21px; }
+  body.F4 .band{ background:#fff; }
+  body.F4 .band a{ color:var(--ink); border-color:var(--ink); }
+
+  /* ======== F5 角落とし（G1 の八角形を維持）+ Teko ======== */
+  body.F5 .card{ border:0; box-shadow:none; filter:drop-shadow(7px 7px 0 var(--ink)); background:var(--ink); padding:3px; clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 18px,100% calc(100% - 18px),calc(100% - 18px) 100%,18px 100%,0 calc(100% - 18px),0 18px); }
+  body.F5 .card > *{ }
+  body.F5 .pic{ inset:3px; clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px),0 16px); }
+  body.F5 .pic::before{ content:""; position:absolute; inset:0; background:linear-gradient(to bottom,rgba(0,0,0,0) 35%,rgba(0,0,0,.75) 100%); }
+  body.F5 .nm{ font-family:"Teko","Noto Sans JP",sans-serif; font-weight:700; font-size:64px; bottom:2px; }
+  body.F5 .tile .nm{ font-size:32px; bottom:0; }
+  body.F5 .band{ margin:0 3px 3px; clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px)); }
+</style>
+</head>
+<body>
+<div id="tabs">
+  <button data-v="F1" aria-pressed="true"><b>F1</b>下グラデ（Bebas）</button>
+  <button data-v="F2"><b>F2</b>全面 + 半透明ボタン（Bebas）</button>
+  <button data-v="F3"><b>F3</b>斜めの名前帯（Bebas）</button>
+  <button data-v="F4"><b>F4</b>デュオトーン（Russo One）</button>
+  <button data-v="F5"><b>F5</b>角落とし維持（Teko）</button>
+</div>
+<div class="bg"></div>
+<div class="page">
+  <h1>SF6 <em>PORTAL</em></h1>
+  <div id="app"></div>
+  <p class="note" id="note"></p>
+</div>
+
+<script>
+const MINE = [
+  { n:"ラシード", en:"RASHID", c:"#00c9a7", img:"../../画像/RASHID/topic-08152-1.jpg", l:2, f:1, u:"09/19", r:2 },
+  { n:"ケン", en:"KEN", c:"#ff4b4b", img:"../../画像/RASHID/y_64a3cd87d8348.jpg", l:0, f:0, u:"09/15", r:1 }   /* ケンの画像が無いのでラシードの別画像で代用 */
+];
+const REST = [ ["春麗","CHUN-LI","#3b82f6","../../画像/RASHID/topic-08152-1.jpg"], ["ジュリ","JURI","#c026d3",""], ["ルーク","LUKE","#f59e0b",""], ["キャミィ","CAMMY","#84cc16",""], ["リュウ","RYU","#e11d48",""], ["ガイル","GUILE","#0ea5e9",""] ];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const style = (c, img) => 'style="--c:' + c + (img ? ';--img:url(\'' + encodeURI(img) + '\')' : "") + '"';
+const big = m => '<div class="card' + (m.img ? "" : " noimg") + '" ' + style(m.c, m.img) + '><div class="face"><div class="pic" data-ini="' + esc(m.n[0]) + '"></div>' +
+  '<div class="st"><span>習得 <b>' + m.l + '</b></span><span>★ <b>' + m.f + '</b></span><span>更新 <b>' + m.u + '</b></span></div>' +
+  '<h3 class="nm bebas"><small>' + esc(m.en) + '</small>' + esc(m.n) + '</h3></div>' +
+  '<div class="band"><a href="#">COMBO DB</a><a href="#">VS DB</a><a href="#">Information<i>' + m.r + '</i></a></div></div>';
+const tile = r => '<div class="card tile' + (r[3] ? "" : " noimg") + '" ' + style(r[2], r[3]) + '><div class="face"><div class="pic" data-ini="' + esc(r[0][0]) + '"></div>' +
+  '<h3 class="nm bebas">' + esc(r[0]) + '</h3></div>' +
+  '<div class="band"><a href="#">COMBO DB</a><a href="#">VS DB</a><a href="#">INFO</a></div></div>';
+const NOTES = {
+  F1: "画像をカード全面（ボタン帯の上まで）に敷き、下へ向かって暗くするグラデで名前を読ませる。名前は右下に Bebas Neue の白、統計は左下。ボタン帯は炭色のまま。画像が無いキャラはキャラ色の面 + 斜線 + 頭文字。",
+  F2: "ボタン帯も画像の上に載せ、ボタンは黒 45% の半透明ピル。名前は右上、統計は左上に移し、画像の下半分をボタンに使う。最も画像が大きく見える。",
+  F3: "右下に炭色の斜め面を置き、その中に名前を白で。斜め面の左端にキャラ色の細い帯（SF6 ロゴの切れ込みの流用）。文字の可読性が画像に依存しない。",
+  F4: "画像をグレースケールにしてキャラ色で染めるデュオトーン。カードごとに色が揃うので一覧が整う。名前は Russo One（幾何学的なゴシック）。ボタン帯は白。",
+  F5: "G1 の八角形（角落とし）と黒線・硬い影を維持したまま、中身を全面画像に。名前は Teko（コンデンスの幾何学体）で右下。ロゴの多角形らしさを残す案。"
+};
+function show(v){
+  document.body.className = v;
+  document.getElementById("app").innerHTML =
+    '<div class="sec mine"><h2>MY CHARACTERS<span>自キャラ</span></h2><span class="line"></span></div><div class="grid3">' + MINE.map(big).join("") + '</div>' +
+    '<div class="sec"><h2>ROSTER<span>その他のキャラ</span></h2><span class="line"></span></div><div class="grid6">' + REST.map(tile).join("") + '</div>';
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+  document.getElementById("note").textContent = NOTES[v];
+  location.hash = v;
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => show(b.dataset.v));
+show(/^#F[1-5]$/.test(location.hash) ? location.hash.slice(1) : "F1");
+</script>
+</body></html>

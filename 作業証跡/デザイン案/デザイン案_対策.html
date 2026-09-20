@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>キャラ対策 デザイン案（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.7; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; background:#161616; color:#fff; font-size:12.5px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 6px; background:#161616; color:#999; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#ff3d7f; }
+  #tabs b{ font-weight:900; margin-right:5px; }
+  .variant{ display:none; min-height:100vh; padding-top:44px; }
+  .variant.on{ display:block; }
+  .note{ font-size:12.5px; opacity:.7; margin:22px 0 0; }
+  video{ display:block; width:100%; height:auto; background:#000; }
+
+  /* ================= M1 ポータル直系（白地・黒線・硬い影） ================= */
+  #M1{ background:#f6f3ee; color:#161616; }
+  #M1 .wrap{ max-width:1180px; margin:0 auto; padding:36px 20px 80px; }
+  #M1 .back{ display:inline-block; font-size:12px; font-weight:900; border:2px solid #161616; border-radius:999px; padding:1px 12px; background:#fff; text-decoration:none; box-shadow:3px 3px 0 #161616; margin-bottom:14px; }
+  #M1 header{ display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap; margin-bottom:18px; }
+  #M1 .vs{ font-size:13px; letter-spacing:.3em; font-weight:900; color:#ff3d7f; }
+  #M1 h1{ margin:0; font-size:clamp(56px,9vw,96px); line-height:.9; }
+  #M1 .spacer{ flex:1; }
+  #M1 .btn{ font:inherit; font-size:13px; font-weight:900; color:#161616; background:#fff; border:3px solid #161616; border-radius:12px; padding:8px 16px; cursor:pointer; box-shadow:4px 4px 0 #161616; }
+  #M1 .summary{ background:#fff; border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; padding:16px 20px; margin-bottom:22px; position:relative; overflow:hidden; }
+  #M1 .summary::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:10px; background:var(--c); }
+  #M1 .summary h2{ margin:0 0 6px; font-size:12px; font-weight:900; color:#666; display:flex; gap:12px; }
+  #M1 .summary h2 .d{ margin-left:auto; font-weight:400; }
+  #M1 .summary p{ margin:0; white-space:pre-wrap; }
+  #M1 .filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px; font-size:13px; }
+  #M1 .filters .k{ font-weight:900; margin-right:4px; }
+  #M1 .chip{ font:inherit; font-size:13px; font-weight:700; background:#fff; border:2px solid #161616; border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 #161616; cursor:pointer; }
+  #M1 .chip[aria-pressed="true"]{ background:#161616; color:#fff; }
+  #M1 .count{ font-size:12px; color:#666; margin:0 0 18px; }
+  #M1 .entry{ background:#fff; border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; display:grid; grid-template-columns:minmax(0,400px) minmax(0,1fr); gap:0; margin-bottom:20px; overflow:hidden; }
+  #M1 .clip{ border-right:3px solid #161616; background:#000; display:flex; flex-direction:column; }
+  #M1 .controls{ display:flex; gap:6px; padding:8px; background:#fff; border-top:3px solid #161616; align-items:center; }
+  #M1 .controls button{ font:inherit; font-size:12px; font-weight:900; background:#fff; border:2px solid #161616; border-radius:8px; padding:2px 10px; cursor:pointer; }
+  #M1 .controls .time{ margin-left:auto; font-size:11px; color:#666; font-family:ui-monospace,monospace; }
+  #M1 .body{ padding:18px 22px; }
+  #M1 .tag{ display:inline-block; font-size:11px; font-weight:900; border:2px solid var(--c); color:var(--c); border-radius:999px; padding:0 10px; margin-bottom:8px; }
+  #M1 .tag.common{ border-color:#161616; color:#161616; }
+  #M1 .title{ margin:0 0 10px; font-size:24px; font-weight:900; line-height:1.3; }
+  #M1 .body p{ margin:0; white-space:pre-wrap; font-size:14.5px; }
+  #M1 .link{ margin-top:10px; font-size:13px; } #M1 .link a{ color:#0066ff; }
+  #M1 .meta{ margin-top:12px; font-size:11.5px; color:#888; }
+  @media (max-width:820px){ #M1 .entry{ grid-template-columns:1fr; } #M1 .clip{ border-right:0; border-bottom:3px solid #161616; } }
+
+  /* ================= M2 見出し帯（キャラ色の帯にタイトル） ================= */
+  #M2{ background:#f6f3ee; color:#161616; }
+  #M2 .wrap{ max-width:1180px; margin:0 auto; padding:36px 20px 80px; }
+  #M2 .top{ display:flex; align-items:center; gap:18px; flex-wrap:wrap; margin-bottom:22px; }
+  #M2 .back{ font-size:12px; font-weight:900; border:2px solid #161616; border-radius:999px; padding:1px 12px; background:#fff; text-decoration:none; box-shadow:3px 3px 0 #161616; }
+  #M2 .hero{ background:var(--c); border:3px solid #161616; border-radius:22px; box-shadow:8px 8px 0 #161616; padding:22px 26px; color:#fff; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.4fr); gap:24px; margin-bottom:22px; position:relative; overflow:hidden; }
+  #M2 .hero .vs{ font-size:12px; letter-spacing:.3em; font-weight:900; color:#161616; }
+  #M2 .hero h1{ margin:0; font-size:clamp(56px,9vw,96px); line-height:.9; text-shadow:4px 4px 0 #161616; }
+  #M2 .hero .sum{ background:#fff; color:#161616; border:3px solid #161616; border-radius:14px; padding:14px 16px; font-size:14px; white-space:pre-wrap; }
+  #M2 .hero .sum b{ display:block; font-size:11px; color:#666; margin-bottom:4px; }
+  #M2 .chip{ font:inherit; font-size:13px; font-weight:700; background:#fff; border:2px solid #161616; border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 #161616; cursor:pointer; }
+  #M2 .chip[aria-pressed="true"]{ background:#161616; color:#fff; }
+  #M2 .filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:22px; font-size:13px; }
+  #M2 .filters .k{ font-weight:900; }
+  #M2 .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:22px; }
+  #M2 .entry{ background:#fff; border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; overflow:hidden; display:flex; flex-direction:column; }
+  #M2 .band{ background:var(--c); border-bottom:3px solid #161616; padding:10px 16px; display:flex; align-items:center; gap:10px; }
+  #M2 .band.common{ background:#161616; }
+  #M2 .band .tag{ font-size:10.5px; font-weight:900; background:#fff; border:2px solid #161616; border-radius:999px; padding:0 8px; }
+  #M2 .band .title{ margin:0; font-size:17px; font-weight:900; color:#fff; text-shadow:2px 2px 0 #161616; line-height:1.3; }
+  #M2 .clip{ background:#000; border-bottom:3px solid #161616; }
+  #M2 .controls{ display:flex; gap:6px; padding:6px 10px; border-bottom:3px solid #161616; align-items:center; }
+  #M2 .controls button{ font:inherit; font-size:11.5px; font-weight:900; background:#fff; border:2px solid #161616; border-radius:8px; padding:1px 9px; cursor:pointer; }
+  #M2 .controls .time{ margin-left:auto; font-size:11px; color:#666; font-family:ui-monospace,monospace; }
+  #M2 .body{ padding:14px 16px 16px; }
+  #M2 .body p{ margin:0; white-space:pre-wrap; font-size:14px; }
+  #M2 .link{ margin-top:8px; font-size:12.5px; } #M2 .link a{ color:#0066ff; }
+  #M2 .meta{ margin-top:10px; font-size:11px; color:#888; }
+  @media (max-width:820px){ #M2 .hero{ grid-template-columns:1fr; } }
+
+  /* ================= M3 ダーク × ポップ（暗い背景 + ポータルの意匠） ================= */
+  #M3{ background:#15161c; color:#f4f1ea; }
+  #M3 .wrap{ max-width:1180px; margin:0 auto; padding:36px 20px 80px; }
+  #M3 .back{ display:inline-block; font-size:12px; font-weight:900; border:2px solid #f4f1ea; border-radius:999px; padding:1px 12px; text-decoration:none; box-shadow:3px 3px 0 #f4f1ea; margin-bottom:14px; }
+  #M3 header{ display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap; margin-bottom:18px; }
+  #M3 .vs{ font-size:13px; letter-spacing:.3em; font-weight:900; color:#ff3d7f; }
+  #M3 h1{ margin:0; font-size:clamp(56px,9vw,96px); line-height:.9; color:var(--c); text-shadow:4px 4px 0 #000; }
+  #M3 .spacer{ flex:1; }
+  #M3 .btn{ font:inherit; font-size:13px; font-weight:900; color:#f4f1ea; background:#15161c; border:3px solid #f4f1ea; border-radius:12px; padding:8px 16px; cursor:pointer; box-shadow:4px 4px 0 #f4f1ea; }
+  #M3 .summary{ background:#1f2029; border:3px solid #f4f1ea; border-radius:18px; box-shadow:6px 6px 0 var(--c); padding:16px 20px; margin-bottom:22px; }
+  #M3 .summary h2{ margin:0 0 6px; font-size:12px; font-weight:900; color:#a9a49a; display:flex; gap:12px; }
+  #M3 .summary h2 .d{ margin-left:auto; font-weight:400; }
+  #M3 .summary p{ margin:0; white-space:pre-wrap; }
+  #M3 .filters{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px; font-size:13px; }
+  #M3 .filters .k{ font-weight:900; margin-right:4px; }
+  #M3 .chip{ font:inherit; font-size:13px; font-weight:700; color:#f4f1ea; background:#1f2029; border:2px solid #f4f1ea; border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 #f4f1ea; cursor:pointer; }
+  #M3 .chip[aria-pressed="true"]{ background:#ff3d7f; border-color:#ff3d7f; color:#fff; box-shadow:3px 3px 0 #f4f1ea; }
+  #M3 .count{ font-size:12px; color:#a9a49a; margin:0 0 18px; }
+  #M3 .entry{ background:#1f2029; border:3px solid #f4f1ea; border-radius:18px; box-shadow:6px 6px 0 #000; display:grid; grid-template-columns:minmax(0,420px) minmax(0,1fr); margin-bottom:20px; overflow:hidden; }
+  #M3 .clip{ border-right:3px solid #f4f1ea; background:#000; display:flex; flex-direction:column; }
+  #M3 .controls{ display:flex; gap:6px; padding:8px; background:#1f2029; border-top:3px solid #f4f1ea; align-items:center; }
+  #M3 .controls button{ font:inherit; font-size:12px; font-weight:900; color:#f4f1ea; background:#15161c; border:2px solid #f4f1ea; border-radius:8px; padding:2px 10px; cursor:pointer; }
+  #M3 .controls .time{ margin-left:auto; font-size:11px; color:#a9a49a; font-family:ui-monospace,monospace; }
+  #M3 .body{ padding:18px 22px; }
+  #M3 .tag{ display:inline-block; font-size:11px; font-weight:900; border:2px solid var(--c); color:var(--c); border-radius:999px; padding:0 10px; margin-bottom:8px; }
+  #M3 .tag.common{ border-color:#a9a49a; color:#a9a49a; }
+  #M3 .title{ margin:0 0 10px; font-size:24px; font-weight:900; line-height:1.3; }
+  #M3 .body p{ margin:0; white-space:pre-wrap; font-size:14.5px; color:#d9d5ca; }
+  #M3 .link{ margin-top:10px; font-size:13px; } #M3 .link a{ color:#54c6ea; }
+  #M3 .meta{ margin-top:12px; font-size:11.5px; color:#7c7870; }
+  @media (max-width:820px){ #M3 .entry{ grid-template-columns:1fr; } #M3 .clip{ border-right:0; border-bottom:3px solid #f4f1ea; } }
+
+  /* ================= M4 ノート風（左に方針とフィルタを固定） ================= */
+  #M4{ background:#f6f3ee; color:#161616; }
+  #M4 .wrap{ max-width:1240px; margin:0 auto; padding:36px 20px 80px; display:grid; grid-template-columns:300px minmax(0,1fr); gap:26px; align-items:start; }
+  #M4 aside{ position:sticky; top:56px; display:flex; flex-direction:column; gap:14px; }
+  #M4 .back{ font-size:12px; font-weight:900; border:2px solid #161616; border-radius:999px; padding:1px 12px; background:#fff; text-decoration:none; box-shadow:3px 3px 0 #161616; align-self:flex-start; }
+  #M4 .namecard{ background:var(--c); border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; padding:16px 18px; color:#fff; }
+  #M4 .namecard .vs{ font-size:11px; letter-spacing:.3em; font-weight:900; color:#161616; }
+  #M4 .namecard h1{ margin:0; font-size:56px; line-height:.95; text-shadow:3px 3px 0 #161616; }
+  #M4 .summary{ background:#fff; border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; padding:14px 16px; font-size:13.5px; }
+  #M4 .summary h2{ margin:0 0 6px; font-size:11px; font-weight:900; color:#666; }
+  #M4 .summary p{ margin:0; white-space:pre-wrap; }
+  #M4 .summary .d{ display:block; margin-top:8px; font-size:11px; color:#888; }
+  #M4 .filters{ background:#fff; border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; padding:12px 14px; display:flex; flex-direction:column; gap:6px; }
+  #M4 .filters .k{ font-size:11px; font-weight:900; color:#666; }
+  #M4 .chip{ font:inherit; font-size:13px; font-weight:700; background:#fff; border:2px solid #161616; border-radius:10px; padding:5px 12px; text-align:left; cursor:pointer; }
+  #M4 .chip[aria-pressed="true"]{ background:#161616; color:#fff; }
+  #M4 .btn{ font:inherit; font-size:13px; font-weight:900; color:#161616; background:#fff; border:3px solid #161616; border-radius:12px; padding:8px 16px; cursor:pointer; box-shadow:4px 4px 0 #161616; }
+  #M4 main .count{ font-size:12px; color:#666; margin:0 0 14px; display:flex; align-items:center; gap:12px; }
+  #M4 .entry{ background:#fff; border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; margin-bottom:18px; overflow:hidden; }
+  #M4 .head{ padding:14px 18px 10px; display:flex; gap:12px; align-items:baseline; flex-wrap:wrap; border-bottom:3px solid #161616; }
+  #M4 .head .tag{ font-size:11px; font-weight:900; border:2px solid var(--c); color:var(--c); border-radius:999px; padding:0 10px; }
+  #M4 .head .tag.common{ border-color:#161616; color:#161616; }
+  #M4 .head .title{ margin:0; font-size:22px; font-weight:900; line-height:1.3; }
+  #M4 .row{ display:grid; grid-template-columns:minmax(0,360px) minmax(0,1fr); }
+  #M4 .clip{ background:#000; border-right:3px solid #161616; }
+  #M4 .controls{ display:flex; gap:6px; padding:6px 10px; background:#fff; border-top:3px solid #161616; align-items:center; }
+  #M4 .controls button{ font:inherit; font-size:11.5px; font-weight:900; background:#fff; border:2px solid #161616; border-radius:8px; padding:1px 9px; cursor:pointer; }
+  #M4 .controls .time{ margin-left:auto; font-size:11px; color:#666; font-family:ui-monospace,monospace; }
+  #M4 .body{ padding:14px 18px; }
+  #M4 .body p{ margin:0; white-space:pre-wrap; font-size:14px; }
+  #M4 .link{ margin-top:8px; font-size:12.5px; } #M4 .link a{ color:#0066ff; }
+  #M4 .meta{ margin-top:10px; font-size:11px; color:#888; }
+  @media (max-width:900px){ #M4 .wrap{ grid-template-columns:1fr; } #M4 aside{ position:static; } #M4 .row{ grid-template-columns:1fr; } #M4 .clip{ border-right:0; border-bottom:3px solid #161616; } }
+</style>
+</head>
+<body>
+
+<div id="tabs">
+  <button data-v="M1" aria-pressed="true"><b>M1</b>ポータル直系（白地・横並びカード）</button>
+  <button data-v="M2" aria-pressed="false"><b>M2</b>見出し帯（キャラ色の帯 + グリッド）</button>
+  <button data-v="M3" aria-pressed="false"><b>M3</b>ダーク × ポップ（暗い背景のまま統一）</button>
+  <button data-v="M4" aria-pressed="false"><b>M4</b>ノート風（左に方針とフィルタを固定）</button>
+</div>
+
+<section id="M1" class="variant on" style="--c:#ff4b4b"><div class="wrap">
+  <a class="back" href="#">← 一覧</a>
+  <header><div><div class="vs">VS / キャラ対策</div><h1 class="disp">ケン</h1></div><span class="spacer"></span><button class="btn">編集</button></header>
+  <div class="summary"><h2>特徴と立ち回り方針<span class="d">更新 2026-09-20</span></h2><p data-sum></p></div>
+  <div class="filters"><span class="k">キャラ</span><button class="chip" aria-pressed="true">すべて</button><button class="chip">全キャラ共通</button><button class="chip">ケン</button><button class="chip">ラシード</button></div>
+  <p class="count">3 / 3 件</p>
+  <div data-list></div>
+  <p class="note">ポータルのカード（白・3px黒線・硬い影・角丸18px）をそのまま横長にし、左に動画、右に本文。見出し帯の左端にキャラ色。チップはポータルと同じピル。</p>
+</div></section>
+
+<section id="M2" class="variant" style="--c:#ff4b4b"><div class="wrap">
+  <div class="top"><a class="back" href="#">← 一覧</a><span style="flex:1"></span><button class="chip">編集</button></div>
+  <div class="hero"><div><div class="vs">VS / キャラ対策</div><h1 class="disp">ケン</h1></div><div class="sum"><b>特徴と立ち回り方針 / 更新 2026-09-20</b><span data-sum></span></div></div>
+  <div class="filters"><span class="k">キャラ</span><button class="chip" aria-pressed="true">すべて</button><button class="chip">全キャラ共通</button><button class="chip">ケン</button><button class="chip">ラシード</button></div>
+  <div class="grid" data-list></div>
+  <p class="note">上部はキャラ色のヒーロー（ポータルの大カードと同じ形）に名前と方針をまとめ、対策はキャラ色の帯にタイトルを載せた縦カードをグリッドで並べる。件数が増えても一覧しやすい。</p>
+</div></section>
+
+<section id="M3" class="variant" style="--c:#ff4b4b"><div class="wrap">
+  <a class="back" href="#">← 一覧</a>
+  <header><div><div class="vs">VS / キャラ対策</div><h1 class="disp">ケン</h1></div><span class="spacer"></span><button class="btn">編集</button></header>
+  <div class="summary"><h2>特徴と立ち回り方針<span class="d">更新 2026-09-20</span></h2><p data-sum></p></div>
+  <div class="filters"><span class="k">キャラ</span><button class="chip" aria-pressed="true">すべて</button><button class="chip">全キャラ共通</button><button class="chip">ケン</button><button class="chip">ラシード</button></div>
+  <p class="count">3 / 3 件</p>
+  <div data-list></div>
+  <p class="note">動画を見る道具なので背景は暗いまま。ポータルの要素（Bebas の見出し、3px の太線、硬い影、ピンクのアクセント、ピルのチップ）を暗色で再現し、影はキャラ色や黒にする。</p>
+</div></section>
+
+<section id="M4" class="variant" style="--c:#ff4b4b"><div class="wrap">
+  <aside>
+    <a class="back" href="#">← 一覧</a>
+    <div class="namecard"><div class="vs">VS / キャラ対策</div><h1 class="disp">ケン</h1></div>
+    <div class="summary"><h2>特徴と立ち回り方針</h2><p data-sum></p><span class="d">更新 2026-09-20</span></div>
+    <div class="filters"><span class="k">キャラ</span><button class="chip" aria-pressed="true">すべて</button><button class="chip">全キャラ共通</button><button class="chip">ケン</button><button class="chip">ラシード</button></div>
+    <button class="btn">編集</button>
+  </aside>
+  <main>
+    <p class="count">3 / 3 件</p>
+    <div data-list></div>
+    <p class="note">左に名前・方針・フィルタを固定し、右をスクロール。方針を見ながら対策を読める。対策はタイトル帯 + 動画と本文の2段。</p>
+  </main>
+</div></section>
+
+<script>
+const SUM = "ケンは通常技が長く、迅雷脚と波動拳が強いため立ち回りに注意。\n突進技には弱いので積極的に使う。";
+const CLIP = "../../COMBO_DB/RASHID/clips/壁インパクト1.mp4";
+const ENTRIES = [
+  { title:"迅雷脚の派生対策", self:"全キャラ共通", note:"中段派生はしゃがみガードから立ちに切替。\n下段派生は -6F なので確定反撃。", link:"https://youtu.be/xxxx", file:"迅雷脚対策", clip:CLIP, updated:"2026-09-20" },
+  { title:"起き攻めの投げと打撃の択", self:"ラシード", note:"遅らせグラップが有効。読み合いに負けたらバクステで仕切り直す。", link:"", file:"起き攻め", clip:CLIP, updated:"2026-09-19" },
+  { title:"画面端の龍尾脚対策", self:"ケン", note:"", link:"https://example.com/frames/ken", file:"", clip:"", updated:"2026-09-18" }
+];
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const clipHtml = (e, dark) => e.clip
+  ? '<video preload="metadata" muted playsinline src="' + e.clip + '"></video>'
+  : '<div style="aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;color:' + (dark ? "#a9a49a" : "#888") + ';font-size:13px">クリップなし</div>';
+const controls = '<div class="controls"><button>再生</button><button>◀</button><button>▶</button><button>頭出し</button><span class="time">0.00s</span></div>';
+const tag = e => '<span class="tag' + (e.self === "全キャラ共通" ? " common" : "") + '">' + esc(e.self) + "</span>";
+const link = e => e.link ? '<div class="link"><a href="' + esc(e.link) + '">' + esc(e.link) + "</a></div>" : "";
+const meta = e => '<div class="meta">' + (e.file ? esc(e.file) : "クリップなし") + " / 更新 " + e.updated + "</div>";
+
+const T = {
+  M1: e => '<article class="entry"><div class="clip">' + clipHtml(e) + controls + '</div><div class="body">' + tag(e) + '<h3 class="title">' + esc(e.title) + "</h3><p>" + esc(e.note) + "</p>" + link(e) + meta(e) + "</div></article>",
+  M2: e => '<article class="entry"><div class="band' + (e.self === "全キャラ共通" ? " common" : "") + '"><span class="tag">' + esc(e.self) + '</span><h3 class="title">' + esc(e.title) + '</h3></div><div class="clip">' + clipHtml(e) + "</div>" + controls + '<div class="body"><p>' + esc(e.note) + "</p>" + link(e) + meta(e) + "</div></article>",
+  M3: e => '<article class="entry"><div class="clip">' + clipHtml(e, true) + controls + '</div><div class="body">' + tag(e) + '<h3 class="title">' + esc(e.title) + "</h3><p>" + esc(e.note) + "</p>" + link(e) + meta(e) + "</div></article>",
+  M4: e => '<article class="entry"><div class="head">' + tag(e) + '<h3 class="title">' + esc(e.title) + '</h3></div><div class="row"><div class="clip">' + clipHtml(e) + controls + '</div><div class="body"><p>' + esc(e.note) + "</p>" + link(e) + meta(e) + "</div></div></article>"
+};
+for (const id in T){
+  const sec = document.getElementById(id);
+  sec.querySelector("[data-list]").innerHTML = ENTRIES.map(T[id]).join("");
+  sec.querySelectorAll("[data-sum]").forEach(el => el.textContent = SUM);
+}
+document.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+  const g = b.parentElement; g.querySelectorAll(".chip").forEach(x => x.setAttribute("aria-pressed", "false")); b.setAttribute("aria-pressed", "true");
+});
+function showVariant(id){
+  document.querySelectorAll("#tabs button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === id)));
+  document.querySelectorAll(".variant").forEach(v => v.classList.toggle("on", v.id === id));
+  location.hash = id; window.scrollTo(0, 0);
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => showVariant(b.dataset.v));
+if (/^#M[1-4]$/.test(location.hash)) showVariant(location.hash.slice(1));
+</script>
+</body></html>

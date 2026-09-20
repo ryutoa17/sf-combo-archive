@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>背景画像 デザイン案（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f6f3ee; --ink:#161616; --mute:#666; --kind:#2563eb; --c:#00c9a7; --bgop:.14; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.7; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+
+  /* ---- モック操作パネル ---- */
+  #panel{ position:fixed; top:0; left:0; right:0; z-index:100; background:#161616; color:#fff; font-size:12.5px; display:flex; gap:14px; align-items:center; padding:8px 14px; flex-wrap:wrap; }
+  #panel b{ font-weight:900; }
+  #panel .g{ display:flex; gap:4px; align-items:center; }
+  #panel button{ font:inherit; font-size:12px; background:#333; color:#ccc; border:0; border-radius:6px; padding:4px 10px; cursor:pointer; }
+  #panel button[aria-pressed="true"]{ background:#ff3d7f; color:#fff; }
+  #panel input[type=range]{ width:120px; }
+  #panel label{ display:flex; gap:6px; align-items:center; }
+
+  /* ---- 背景レイヤー（本体に入れる部分） ---- */
+  /* multiply で重ねると、画像の明るい部分は紙色のまま残り、暗い部分だけが沈む */
+  .bg{ position:fixed; inset:0; z-index:0; pointer-events:none; background:var(--img) center/cover no-repeat; filter:grayscale(1); opacity:var(--bgop); mix-blend-mode:multiply; }
+  body.color .bg{ filter:none; }
+  /* B1 全面うっすら: そのまま */
+  /* B2 上部だけ: 下へ向かって紙色に溶ける */
+  body.B2 .bg{ height:560px; inset:auto 0 auto 0; top:0; background-position:center 20%;
+    -webkit-mask-image:linear-gradient(to bottom,#000 35%,transparent 100%); mask-image:linear-gradient(to bottom,#000 35%,transparent 100%); }
+  /* B3 右にキャラ: 左から右へ現れる */
+  body.B3 .bg{ background-position:right center; background-size:auto 110%;
+    -webkit-mask-image:linear-gradient(to right,transparent 20%,#000 65%); mask-image:linear-gradient(to right,transparent 20%,#000 65%); }
+  /* B4 ハーフトーン: 印刷風のドットを重ねる */
+  body.B4 .bg{ filter:grayscale(1) contrast(1.15); }
+  body.B4 .bg::after{ content:""; position:absolute; inset:0; background-image:radial-gradient(var(--paper) 1.1px, transparent 1.2px); background-size:5px 5px; }
+  /* B5 ダーク帯の中だけ: 種別バナーの背景に画像を入れる */
+  body.B5 .bg{ display:none; }
+  body.B5 .banner{ position:relative; overflow:hidden; }
+  body.B5 .banner::before{ content:""; position:absolute; inset:0; background:var(--img) center 30%/cover no-repeat; filter:grayscale(1); opacity:.28; mix-blend-mode:multiply; }
+  body.B5 .banner .in{ position:relative; }
+
+  .page{ position:relative; z-index:1; padding-top:48px; }
+
+  /* ---- M1 + D1 の部品 ---- */
+  .banner{ background:var(--kind); color:#fff; border-bottom:3px solid var(--ink); }
+  .banner .in{ max-width:1180px; margin:0 auto; padding:10px 20px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .banner .big{ font-size:44px; line-height:1; text-shadow:3px 3px 0 var(--ink); }
+  .banner .ja{ font-size:14px; font-weight:900; letter-spacing:.2em; }
+  .banner .sp{ flex:1; }
+  .pill{ display:inline-block; font-size:12px; font-weight:900; color:var(--ink); border:2px solid var(--ink); border-radius:999px; padding:1px 12px; background:#fff; text-decoration:none; box-shadow:3px 3px 0 var(--ink); }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 20px 90px; }
+  header{ padding:22px 0 14px; display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; }
+  header .sp{ flex:1; }
+  .name{ margin:0; font-size:clamp(48px,9vw,80px); line-height:.9; }
+  .name em{ font-style:normal; color:#ff3d7f; }
+  .btn{ font:inherit; font-size:13px; font-weight:900; color:var(--ink); background:#fff; border:3px solid var(--ink); border-radius:12px; padding:8px 16px; cursor:pointer; box-shadow:4px 4px 0 var(--ink); }
+  .summary{ background:#fff; border:3px solid var(--ink); border-radius:18px; box-shadow:6px 6px 0 var(--ink); padding:16px 20px 16px 26px; margin:0 0 18px; position:relative; overflow:hidden; font-size:14.5px; }
+  .summary::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:10px; background:var(--c); }
+  .summary b{ display:block; font-size:12px; color:var(--mute); margin-bottom:4px; }
+  .fgroup{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:6px 0; font-size:13px; }
+  .fgroup > span{ font-weight:900; margin-right:4px; min-width:3.2em; }
+  .chip{ font:inherit; font-size:13px; font-weight:700; color:var(--ink); background:#fff; border:2px solid var(--ink); border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 var(--ink); }
+  .chip.on{ background:var(--ink); color:#fff; }
+  .count{ color:var(--mute); font-size:12px; margin:8px 0 16px; }
+  .entry{ background:#fff; border:3px solid var(--ink); border-radius:18px; box-shadow:6px 6px 0 var(--ink); display:grid; grid-template-columns:minmax(0,400px) minmax(0,1fr); margin:0 0 22px; overflow:hidden; }
+  .clip{ background:#000; border-right:3px solid var(--ink); display:flex; flex-direction:column; }
+  .clip video{ display:block; width:100%; height:auto; }
+  .controls{ display:flex; gap:6px; align-items:center; padding:8px; background:#fff; border-top:3px solid var(--ink); margin-top:auto; }
+  .controls button{ font:inherit; font-size:11.5px; font-weight:900; background:#fff; border:2px solid var(--ink); border-radius:8px; padding:2px 10px; box-shadow:2px 2px 0 var(--ink); }
+  .controls .time{ margin-left:auto; font-size:11px; color:var(--mute); font-family:ui-monospace,monospace; }
+  .body{ padding:18px 22px 16px; }
+  .tagchip{ display:inline-block; font-size:11px; font-weight:900; border:2px solid currentColor; border-radius:999px; padding:0 10px; line-height:1.7; margin-bottom:8px; }
+  .recipe{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:20px; font-weight:700; margin:0 0 12px; }
+  .recipe .s{ color:#dc2626; } .recipe .p{ color:#999; font-weight:400; }
+  .title{ margin:0 0 10px; font-size:24px; font-weight:900; }
+  .body p{ margin:0; font-size:14.5px; }
+  .meta{ margin-top:12px; font-size:11.5px; color:#888; }
+  /* ポータル風 */
+  .grid6{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:16px; }
+  .card{ background:#fff; border:3px solid var(--ink); border-radius:16px; box-shadow:6px 6px 0 var(--ink); overflow:hidden; }
+  .card .head{ padding:12px; min-height:110px; position:relative; }
+  .card .cname{ font-size:30px; line-height:1; margin:0; }
+  .card .band{ background:var(--cc); border-top:3px solid var(--ink); padding:7px; display:flex; gap:4px; }
+  .card .band a{ flex:1; text-align:center; font-size:10.5px; font-weight:900; background:#fff; border:2px solid var(--ink); border-radius:8px; padding:4px 2px; text-decoration:none; }
+  .sec{ display:flex; align-items:baseline; gap:12px; margin:8px 0 12px; }
+  .sec h2{ margin:0; font-size:34px; line-height:1; }
+  .sec h2 span{ font-family:"Noto Sans JP"; font-weight:900; font-size:14px; margin-left:8px; }
+  .sec .line{ flex:1; height:3px; background:var(--ink); border-radius:2px; }
+  .note{ font-size:12.5px; color:var(--mute); margin-top:24px; }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body class="B1">
+
+<div id="panel">
+  <b>敷き方</b>
+  <div class="g" id="modes">
+    <button data-m="B1" aria-pressed="true">B1 全面うっすら</button>
+    <button data-m="B2">B2 上部だけ</button>
+    <button data-m="B3">B3 右にキャラ</button>
+    <button data-m="B4">B4 ハーフトーン</button>
+    <button data-m="B5">B5 帯の中だけ</button>
+  </div>
+  <b>画像</b>
+  <div class="g" id="imgs">
+    <button data-i="../../画像/RASHID/topic-08152-1.jpg" aria-pressed="true">topic</button>
+    <button data-i="../../画像/RASHID/y_64a3cd87d8348.jpg">y_</button>
+  </div>
+  <label>濃さ <input type="range" id="op" min="4" max="60" value="14"> <span id="opv">14%</span></label>
+  <label><input type="checkbox" id="col"> 色あり</label>
+  <b>画面</b>
+  <div class="g" id="screens">
+    <button data-s="portal">ポータル</button>
+    <button data-s="combo" aria-pressed="true">コンボDB</button>
+    <button data-s="vs">VS DB</button>
+  </div>
+</div>
+
+<div class="bg"></div>
+
+<div class="page">
+  <div class="banner" id="banner"><div class="in">
+    <span class="big disp" id="bigTxt">COMBO DB</span><span class="ja" id="jaTxt">コンボDB</span><span class="sp"></span><a class="pill" href="#">← 一覧</a>
+  </div></div>
+
+  <div class="wrap">
+    <header><h1 class="name disp" id="h1">ラシード</h1><span class="sp"></span><button class="btn">編集</button></header>
+
+    <!-- コンボDB -->
+    <div id="scr-combo">
+      <div class="fgroup"><span>位置</span><span class="chip on">すべて</span><span class="chip">中央</span><span class="chip">端</span></div>
+      <div class="fgroup"><span>タグ</span><span class="chip on">すべて</span><span class="chip">コンボ</span><span class="chip">パニカン</span><span class="chip">壁インパクト</span><span class="chip">セットプレイ</span></div>
+      <p class="count">10 / 10 件　<b style="color:#0f9d6a">習得 2 / 10</b></p>
+      <article class="entry"><div class="clip"><video preload="metadata" muted playsinline src="../../COMBO_DB/RASHID/clips/壁インパクト1.mp4"></video><div class="controls"><button>再生</button><button>◀</button><button>▶</button><button>頭出し</button><span class="time">0.00s</span></div></div>
+        <div class="body"><span class="tagchip" style="color:#b45309">壁インパクト</span><div class="recipe">5MP <span class="p">&gt;</span> 5MK <span class="p">&gt;</span> 弱ミキサー <span class="p">&gt;</span> 大ミキサー</div><p>5MK消費で+5Fシミー不可</p><div class="meta">端 / 壁インパクト1</div></div></article>
+      <article class="entry"><div class="clip"><video preload="metadata" muted playsinline src="../../COMBO_DB/RASHID/clips/壁インパクト2.mp4"></video><div class="controls"><button>再生</button><button>◀</button><button>▶</button><button>頭出し</button><span class="time">0.00s</span></div></div>
+        <div class="body"><span class="tagchip" style="color:#b45309">壁インパクト</span><div class="recipe">5MK <span class="p">&gt;</span> 弱ミキサー <span class="p">&gt;</span> 6MP <span class="p">&gt;</span> 弱サイクロン上派生</div><p>火力は低めだが、空中攻撃で攻め継続可能。</p><div class="meta">中央 / 壁インパクト2</div></div></article>
+    </div>
+
+    <!-- VS DB -->
+    <div id="scr-vs" hidden>
+      <div class="summary" style="--c:#ff4b4b"><b>特徴と立ち回り方針</b>ケンは通常技が長く、迅雷脚と波動拳が強いため立ち回りに注意。突進技には弱いので積極的に使う。</div>
+      <div class="fgroup"><span>キャラ</span><span class="chip on">すべて</span><span class="chip">全キャラ共通</span><span class="chip">ラシード</span></div>
+      <p class="count">2 / 2 件</p>
+      <article class="entry"><div class="clip"><video preload="metadata" muted playsinline src="../../COMBO_DB/RASHID/clips/中スパイク〆_中段起き攻め.mp4"></video><div class="controls"><button>再生</button><button>◀</button><button>▶</button><button>頭出し</button><span class="time">0.00s</span></div></div>
+        <div class="body"><span class="tagchip">全キャラ共通</span><div class="title">迅雷脚の派生対策</div><p>中段派生はしゃがみガードから立ちに切替。下段派生は -6F なので確定反撃。</p><div class="meta">迅雷脚対策 / 更新 2026-09-20</div></div></article>
+    </div>
+
+    <!-- ポータル -->
+    <div id="scr-portal" hidden>
+      <div class="sec"><h2 class="disp" style="color:#ff3d7f">MY CHARACTERS<span>自キャラ</span></h2><span class="line"></span></div>
+      <div class="grid6" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:22px;margin-bottom:22px">
+        <div class="card" style="--cc:#00c9a7"><div class="head" style="min-height:200px;padding:18px 20px"><h3 class="cname disp" style="font-size:54px">ラシード</h3><div style="font-size:12px;color:#666">習得 2　★ 1　更新 09/19</div></div><div class="band" style="padding:12px 14px;gap:8px"><a href="#" style="font-size:13px;padding:9px 4px;border-width:3px;border-radius:10px">コンボ記録</a><a href="#" style="font-size:13px;padding:9px 4px;border-width:3px;border-radius:10px">キャラ対策</a><a href="#" style="font-size:13px;padding:9px 4px;border-width:3px;border-radius:10px">参考情報 0</a></div></div>
+      </div>
+      <div class="sec"><h2 class="disp">ROSTER<span>その他のキャラ</span></h2><span class="line"></span></div>
+      <div class="grid6">
+        <div class="card" style="--cc:#ff4b4b"><div class="head"><h3 class="cname disp">ケン</h3></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+        <div class="card" style="--cc:#3b82f6"><div class="head"><h3 class="cname disp">春麗</h3></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+        <div class="card" style="--cc:#c026d3"><div class="head"><h3 class="cname disp">ジュリ</h3></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+        <div class="card" style="--cc:#f59e0b"><div class="head"><h3 class="cname disp">ルーク</h3></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+        <div class="card" style="--cc:#84cc16"><div class="head"><h3 class="cname disp">キャミィ</h3></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+        <div class="card" style="--cc:#e11d48"><div class="head"><h3 class="cname disp">リュウ</h3></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+      </div>
+    </div>
+
+    <p class="note" id="note"></p>
+  </div>
+</div>
+
+<script>
+const NOTES = {
+  B1: "画面全体に固定（スクロールしても動かない）で敷き、グレースケール + 低い不透明度。カードは白なので読みやすさは変わらない。",
+  B2: "画像を上部 560px だけに置き、下へ向かって紙色に溶かす。見出し付近にだけ雰囲気が出て、一覧部分は紙色のまま。",
+  B3: "画像を右寄せにし、左から右へ現れるマスク。キャラの顔が右側に出るので、左のテキストと干渉しにくい。",
+  B4: "B3 の上に印刷風のドットを重ねる。ライト・ポップの「紙」感と合う。",
+  B5: "ページ本体には敷かず、種別バナー（青 / ピンク）の中だけに乗算で薄く入れる。最も控えめで、動画の見やすさに影響しない。ポータルにはバナーが無いので別扱いになる。"
+};
+const SCREENS = {
+  portal: { kind:"#161616", big:"SF6", ja:"PORTAL", h1:'SF6 <em>PORTAL</em>' },
+  combo:  { kind:"#2563eb", big:"COMBO DB", ja:"コンボDB", h1:"ラシード" },
+  vs:     { kind:"#ff3d7f", big:"VS DB", ja:"VSキャラ対策DB", h1:"ケン" }
+};
+function setMode(m){
+  document.body.classList.remove("B1","B2","B3","B4","B5"); document.body.classList.add(m);
+  document.querySelectorAll("#modes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
+  document.getElementById("note").textContent = NOTES[m];
+}
+function setImg(i){
+  document.documentElement.style.setProperty("--img", 'url("' + encodeURI(i) + '")');
+  document.querySelectorAll("#imgs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.i === i)));
+}
+function setScreen(s){
+  const sc = SCREENS[s];
+  document.documentElement.style.setProperty("--kind", sc.kind);
+  document.getElementById("bigTxt").textContent = sc.big; document.getElementById("jaTxt").textContent = sc.ja;
+  document.getElementById("h1").innerHTML = sc.h1;
+  document.getElementById("banner").hidden = (s === "portal");
+  ["portal","combo","vs"].forEach(k => document.getElementById("scr-" + k).hidden = (k !== s));
+  document.querySelectorAll("#screens button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.s === s)));
+}
+document.querySelectorAll("#modes button").forEach(b => b.onclick = () => setMode(b.dataset.m));
+document.querySelectorAll("#imgs button").forEach(b => b.onclick = () => setImg(b.dataset.i));
+document.querySelectorAll("#screens button").forEach(b => b.onclick = () => setScreen(b.dataset.s));
+const op = document.getElementById("op");
+op.oninput = () => { document.documentElement.style.setProperty("--bgop", op.value / 100); document.getElementById("opv").textContent = op.value + "%"; };
+document.getElementById("col").onchange = e => document.body.classList.toggle("color", e.target.checked);
+/* URL: #B3,vs,30 のように初期状態を指定できる */
+const h = location.hash.slice(1).split(",");
+setImg("../../画像/RASHID/topic-08152-1.jpg");
+setMode(/^B[1-5]$/.test(h[0]) ? h[0] : "B1");
+setScreen(SCREENS[h[1]] ? h[1] : "combo");
+if (h[2]){ op.value = h[2]; op.oninput(); }
+</script>
+</body></html>

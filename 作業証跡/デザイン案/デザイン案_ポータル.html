@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ポータル デザイン案（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  /* ================= 共通 ================= */
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{ margin:0; font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.6; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Anton","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+
+  /* 案の切替タブ（モック専用） */
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; gap:0; background:#000; color:#fff; font-size:13px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 8px; background:#000; color:#aaa; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#fff; }
+  #tabs b{ font-weight:900; margin-right:6px; }
+  .variant{ display:none; min-height:100vh; padding-top:42px; }
+  .variant.on{ display:block; }
+  .note{ font-size:12px; opacity:.7; padding:4px 20px 0; }
+  [hidden]{ display:none !important; }
+
+  /* キャラ固有色（--c）は各カードに inline で与える */
+
+  /* ================= A: ストリート ================= */
+  #A{ background:#0b0b10; color:#f4f1ea; overflow:hidden; position:relative; }
+  #A .slash{ position:absolute; inset:-20% -10% auto; height:420px; transform:skewY(-7deg); z-index:0;
+    background:linear-gradient(100deg,#ff2d95 0%,#ff7a00 30%,#ffe600 50%,#00e5a0 72%,#00c2ff 100%); opacity:.9; }
+  #A .slash::after{ content:""; position:absolute; inset:0; background:repeating-linear-gradient(135deg,rgba(0,0,0,.18) 0 6px,transparent 6px 22px); mix-blend-mode:multiply; }
+  #A .wrap{ position:relative; z-index:1; max-width:1240px; margin:0 auto; padding:56px 20px 80px; }
+  #A header{ display:flex; align-items:flex-end; gap:24px; flex-wrap:wrap; margin-bottom:34px; }
+  #A h1{ margin:0; font-size:clamp(84px,16vw,180px); line-height:.82; color:#0b0b10; -webkit-text-stroke:2px #0b0b10; }
+  #A h1 small{ display:block; font-size:.22em; letter-spacing:.35em; color:#f4f1ea; -webkit-text-stroke:0; margin-top:10px; }
+  #A .search{ flex:1 1 240px; max-width:380px; }
+  #A .search input{ width:100%; font:inherit; font-size:15px; padding:12px 18px; border-radius:999px; border:3px solid #0b0b10; background:#fff; color:#111; }
+  #A .recent{ display:flex; gap:8px 14px; flex-wrap:wrap; align-items:center; margin:0 0 26px; font-size:13px; color:#c9c4b8; }
+  #A .recent .k{ font-family:"Bebas Neue",sans-serif; font-size:16px; letter-spacing:.15em; color:#ffe600; }
+  #A .recent span:not(.k){ background:#181822; border:1px solid #2a2a36; padding:2px 10px; border-radius:999px; }
+  #A .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+  #A .card{ position:relative; background:#14141c; border:2px solid #23232e; border-top:6px solid var(--c); padding:18px 22px 18px; overflow:hidden; min-height:230px; display:flex; flex-direction:column; transition:transform .15s, border-color .15s; }
+  #A .card:hover{ transform:translateY(-3px); border-color:var(--c); }
+  #A .card::before{ content:""; position:absolute; right:-40px; top:-40px; width:80px; height:80px; background:var(--c); transform:rotate(45deg); }
+  #A .card .wm{ position:absolute; right:-10px; bottom:-30px; font-size:190px; line-height:1; color:var(--c); opacity:.10; pointer-events:none; font-weight:900; }
+  #A .card .name{ position:relative; font-size:52px; line-height:1; margin:0 0 6px; text-shadow:3px 3px 0 #000; }
+  #A .card .name small{ display:block; font-family:"Noto Sans JP"; font-weight:700; font-size:12px; letter-spacing:.2em; color:var(--c); text-shadow:none; margin-bottom:6px; }
+  #A .stats{ position:relative; display:flex; gap:12px; font-size:12px; color:#a9a49a; margin-bottom:14px; }
+  #A .stats b{ color:#fff; font-family:"Bebas Neue"; font-size:16px; letter-spacing:.05em; }
+  #A .menu{ position:relative; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:auto; }
+  #A .menu a{ display:block; text-align:center; text-decoration:none; font-weight:700; font-size:13px; padding:12px 6px; background:#1d1d27; border:2px solid #2b2b38; color:#f4f1ea; transition:.15s; }
+  #A .menu a:hover{ background:var(--c); color:#0b0b10; border-color:var(--c); }
+  #A .menu a span{ display:block; font-family:"Bebas Neue"; font-size:20px; letter-spacing:.08em; line-height:1; margin-bottom:2px; }
+  #A .menu a.ref{ position:relative; }
+  #A .menu a.ref i{ position:absolute; top:-8px; right:-8px; background:#ffe600; color:#000; font-style:normal; font-size:11px; font-weight:900; border-radius:999px; padding:1px 7px; }
+  #A .card.open{ grid-column:1/-1; }
+  #A .refs{ position:relative; margin-top:18px; border-top:2px dashed #2b2b38; padding-top:14px; display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:10px; }
+  #A .ref-item{ background:#0f0f15; border-left:4px solid var(--c); padding:10px 12px; }
+  #A .ref-item p{ margin:0 0 6px; font-size:14px; }
+  #A .ref-item a{ font-size:12px; color:#00c2ff; word-break:break-all; }
+  #A .ref-item .d{ font-size:11px; color:#7c7870; margin-left:8px; }
+
+  /* ================= B: セレクト画面 ================= */
+  #B{ background:#101018; color:#fff; }
+  #B .top{ background:repeating-linear-gradient(-45deg,#1a1a26 0 18px,#14141e 18px 36px); border-bottom:4px solid #fff; padding:34px 20px 22px; }
+  #B .top .in{ max-width:1240px; margin:0 auto; display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap; }
+  #B h1{ margin:0; font-size:clamp(48px,9vw,96px); line-height:.9; background:linear-gradient(90deg,#00f0ff,#ff00c8); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  #B h1 small{ display:block; font-size:.28em; letter-spacing:.4em; color:#fff; -webkit-text-fill-color:#fff; }
+  #B .search input{ font:inherit; font-size:14px; padding:10px 16px; border:2px solid #fff; background:#000; color:#fff; min-width:260px; }
+  #B .wrap{ max-width:1240px; margin:0 auto; padding:26px 20px 80px; display:grid; grid-template-columns:1fr; gap:22px; }
+  @media (min-width:900px){ #B .wrap{ grid-template-columns:minmax(0,1fr) 380px; align-items:start; } }
+  #B .tiles{ display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:10px; }
+  #B .tile{ aspect-ratio:1/1.05; position:relative; overflow:hidden; cursor:pointer; border:3px solid transparent; transition:.12s;
+    background:linear-gradient(160deg,var(--c) 0%,color-mix(in srgb,var(--c) 55%,#000) 100%); }
+  #B .tile:hover, #B .tile.sel{ border-color:#fff; transform:scale(1.03); z-index:2; box-shadow:0 0 0 3px #000, 0 10px 30px rgba(0,0,0,.5); }
+  #B .tile .nm{ position:absolute; left:10px; right:8px; top:8px; font-size:28px; line-height:1; word-break:keep-all; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:2px 2px 0 rgba(0,0,0,.5); }
+  #B .tile .big{ position:absolute; right:-6px; bottom:-14px; font-size:110px; font-weight:900; color:#fff; opacity:.22; line-height:1; }
+  #B .tile .st{ position:absolute; left:0; right:0; bottom:0; background:rgba(0,0,0,.55); font-size:11px; padding:4px 10px; display:flex; gap:10px; }
+  #B .tile .st b{ font-family:"Bebas Neue"; font-size:15px; letter-spacing:.05em; }
+  #B .tile.add{ background:#1a1a26; border:3px dashed #3a3a4a; display:flex; align-items:center; justify-content:center; color:#777; font-size:13px; }
+  #B .panel{ background:#000; border:3px solid #fff; padding:20px; position:sticky; top:56px; }
+  #B .panel .nm{ font-size:64px; line-height:.9; margin:0; color:var(--c); }
+  #B .panel .nm small{ display:block; font-family:"Noto Sans JP"; font-size:12px; letter-spacing:.2em; color:#aaa; margin-bottom:4px; }
+  #B .panel .stats{ font-size:12px; color:#aaa; margin:10px 0 16px; display:flex; gap:12px; }
+  #B .panel .stats b{ color:#fff; font-family:"Bebas Neue"; font-size:16px; }
+  #B .bigmenu{ display:grid; gap:8px; }
+  #B .bigmenu a{ display:flex; align-items:center; gap:14px; text-decoration:none; padding:14px 16px; background:#14141e; border:2px solid #2a2a3a; transition:.12s; }
+  #B .bigmenu a:hover{ border-color:var(--c); background:color-mix(in srgb,var(--c) 18%,#000); }
+  #B .bigmenu a .ic{ font-family:"Bebas Neue"; font-size:28px; width:48px; color:var(--c); letter-spacing:.05em; }
+  #B .bigmenu a .t{ font-weight:700; }
+  #B .bigmenu a .s{ display:block; font-size:11px; color:#888; font-weight:400; }
+  #B .refs{ margin-top:16px; border-top:2px solid #2a2a3a; padding-top:12px; }
+  #B .refs h4{ margin:0 0 8px; font-family:"Bebas Neue"; font-size:18px; letter-spacing:.1em; color:var(--c); }
+  #B .ref-item{ padding:8px 0; border-bottom:1px solid #1e1e2a; font-size:13px; }
+  #B .ref-item a{ color:#00f0ff; font-size:12px; word-break:break-all; }
+  #B .ref-item .d{ color:#666; font-size:11px; margin-left:6px; }
+
+  /* ================= C: ライト・ポップ ================= */
+  #C{ background:#f6f3ee; color:#161616; }
+  #C .wrap{ max-width:1240px; margin:0 auto; padding:48px 20px 80px; }
+  #C header{ display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-bottom:26px; }
+  #C h1{ margin:0; font-size:clamp(56px,10vw,110px); line-height:.9; color:#161616; }
+  #C h1 em{ font-style:normal; color:#ff3d7f; }
+  #C .search input{ font:inherit; font-size:15px; padding:12px 18px; border-radius:16px; border:3px solid #161616; background:#fff; min-width:280px; box-shadow:5px 5px 0 #161616; }
+  #C .recent{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:26px; font-size:13px; }
+  #C .recent .k{ font-weight:900; margin-right:6px; }
+  #C .recent span:not(.k){ background:#fff; border:2px solid #161616; border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 #161616; }
+  #C .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:22px; }
+  #C .card{ background:#fff; border:3px solid #161616; border-radius:22px; box-shadow:8px 8px 0 #161616; padding:20px 20px 16px; position:relative; overflow:hidden; transition:.12s; }
+  #C .card:hover{ transform:translate(-2px,-2px); box-shadow:10px 10px 0 #161616; }
+  #C .blob{ position:absolute; width:220px; height:220px; border-radius:50%; background:var(--c); right:-70px; top:-90px; opacity:.9; }
+  #C .blob2{ position:absolute; width:90px; height:90px; border-radius:50%; background:var(--c); left:-30px; bottom:-40px; opacity:.35; }
+  #C .name{ position:relative; font-size:46px; line-height:1; margin:0 0 4px; }
+  #C .name small{ display:block; font-family:"Noto Sans JP"; font-weight:900; font-size:11px; letter-spacing:.2em; color:var(--c); margin-bottom:6px; }
+  #C .stats{ position:relative; display:flex; gap:12px; font-size:12px; color:#666; margin:0 0 16px; }
+  #C .stats b{ color:#161616; font-weight:900; }
+  #C .menu{ position:relative; display:flex; flex-direction:column; gap:8px; }
+  #C .menu a{ display:flex; justify-content:space-between; align-items:center; text-decoration:none; font-weight:900; font-size:14px; padding:10px 14px; border:3px solid #161616; border-radius:12px; background:#fff; transition:.1s; }
+  #C .menu a:hover{ background:var(--c); }
+  #C .menu a i{ font-style:normal; font-size:11px; background:#161616; color:#fff; border-radius:999px; padding:1px 8px; }
+  #C .card.open{ grid-column:1/-1; }
+  #C .refs{ position:relative; margin-top:16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:10px; }
+  #C .ref-item{ background:#f6f3ee; border:2px solid #161616; border-radius:12px; padding:10px 12px; font-size:13.5px; }
+  #C .ref-item a{ color:#0066ff; font-size:12px; word-break:break-all; }
+  #C .ref-item .d{ color:#888; font-size:11px; margin-left:6px; }
+</style>
+</head>
+<body>
+
+<div id="tabs">
+  <button data-v="A" aria-pressed="true"><b>A</b>ストリート（ダーク・グラフィティ）</button>
+  <button data-v="B" aria-pressed="false"><b>B</b>キャラセレクト画面（タイル + 右パネル）</button>
+  <button data-v="C" aria-pressed="false"><b>C</b>ライト・ポップ（白地 + 太線）</button>
+</div>
+
+<!-- ================= A ================= -->
+<section id="A" class="variant on">
+  <div class="slash"></div>
+  <div class="wrap">
+    <header>
+      <h1 class="disp">SF6<small>PORTAL</small></h1>
+      <div class="search"><input type="text" placeholder="キャラを検索"></div>
+    </header>
+    <div class="recent"><span class="k">RECENT</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+    <div class="grid" id="gridA"></div>
+    <p class="note">「INFO 参考情報」を押すとカード内に展開（もう一度押すと閉じる）。カード上辺・右上の角・ホバー色がキャラ固有色。</p>
+  </div>
+</section>
+
+<!-- ================= B ================= -->
+<section id="B" class="variant">
+  <div class="top"><div class="in">
+    <h1 class="disp">CHARACTER<br>SELECT<small>SF6 PORTAL</small></h1>
+    <div class="search"><input type="text" placeholder="キャラを検索"></div>
+  </div></div>
+  <div class="wrap">
+    <div>
+      <div class="tiles" id="tilesB"></div>
+      <p class="note">タイルをクリックすると右パネルに切り替わる。タイル下部が習得・★。「+」で新キャラ登録。</p>
+    </div>
+    <aside class="panel" id="panelB"></aside>
+  </div>
+</section>
+
+<!-- ================= C ================= -->
+<section id="C" class="variant">
+  <div class="wrap">
+    <header>
+      <h1 class="disp">SF6 <em>PORTAL</em></h1>
+      <div class="search"><input type="text" placeholder="キャラを検索"></div>
+    </header>
+    <div class="recent"><span class="k">最近の更新</span><span>ラシード 9/19</span><span>ケン 9/15</span><span>春麗 9/10</span></div>
+    <div class="grid" id="gridC"></div>
+    <p class="note">白地に太い黒線とキャラ色の円。「参考情報」を押すとカード内に展開。</p>
+  </div>
+</section>
+
+<script>
+const CHARS = [
+  { name:"ラシード", en:"RASHID", c:"#00d9a3", learned:2, total:10, fav:1, up:"9/19", refs:[
+      { text:"基礎コンボと起き攻めの解説動画。12:30 から中スパイク〆の話。", url:"https://youtu.be/xxxxxxx", d:"9/19" },
+      { text:"フレームデータ表（公式）", url:"https://example.com/frames/rashid", d:"9/10" } ] },
+  { name:"ケン",     en:"KEN",     c:"#ff3b3b", learned:0, total:0, fav:0, up:"9/15", refs:[
+      { text:"迅雷脚の派生一覧と対処", url:"https://youtu.be/yyyyyyy", d:"9/15" } ] },
+  { name:"春麗",     en:"CHUN-LI", c:"#3b82f6", learned:0, total:0, fav:0, up:"9/10", refs:[] },
+  { name:"ジュリ",   en:"JURI",    c:"#c026d3", learned:0, total:0, fav:0, up:"", refs:[] },
+  { name:"ルーク",   en:"LUKE",    c:"#f59e0b", learned:0, total:0, fav:0, up:"", refs:[] },
+  { name:"キャミィ", en:"CAMMY",   c:"#84cc16", learned:0, total:0, fav:0, up:"", refs:[] }
+];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+const refsHtml = (ch, cls) => ch.refs.length
+  ? ch.refs.map(r => '<div class="ref-item"><p>' + esc(r.text) + '</p><a href="' + esc(r.url) + '" target="_blank">' + esc(r.url) + '</a><span class="d">' + esc(r.d) + '</span></div>').join("")
+  : '<div class="ref-item" style="opacity:.6">参考情報はまだありません。「参考情報」→ 追加 で登録</div>';
+
+/* ---- A ---- */
+document.getElementById("gridA").innerHTML = CHARS.map((ch, i) => `
+  <article class="card" style="--c:${ch.c}" data-i="${i}">
+    <div class="wm">${esc(ch.name[0])}</div>
+    <h2 class="name disp"><small>${esc(ch.en)}</small>${esc(ch.name)}</h2>
+    <div class="stats"><span>コンボ <b>${ch.total || "—"}</b></span><span>習得 <b>${ch.learned}</b></span><span>★ <b>${ch.fav}</b></span><span>更新 <b>${ch.up || "—"}</b></span></div>
+    <div class="menu">
+      <a href="#"><span>COMBO</span>コンボ記録</a>
+      <a href="#"><span>VS</span>キャラ対策</a>
+      <a href="#" class="ref" data-toggle="A"><span>INFO</span>参考情報<i>${ch.refs.length}</i></a>
+    </div>
+    <div class="refs" hidden>${refsHtml(ch)}</div>
+  </article>`).join("");
+
+/* ---- C ---- */
+document.getElementById("gridC").innerHTML = CHARS.map((ch, i) => `
+  <article class="card" style="--c:${ch.c}" data-i="${i}">
+    <div class="blob"></div><div class="blob2"></div>
+    <h2 class="name disp"><small>${esc(ch.en)}</small>${esc(ch.name)}</h2>
+    <div class="stats"><span>コンボ <b>${ch.total || "—"}</b></span><span>習得 <b>${ch.learned}</b></span><span>★ <b>${ch.fav}</b></span><span>更新 <b>${ch.up || "—"}</b></span></div>
+    <div class="menu">
+      <a href="#">コンボ記録 <i>${ch.total || 0}</i></a>
+      <a href="#">キャラ対策 <i>0</i></a>
+      <a href="#" data-toggle="C">参考情報 <i>${ch.refs.length}</i></a>
+    </div>
+    <div class="refs" hidden>${refsHtml(ch)}</div>
+  </article>`).join("");
+
+document.querySelectorAll("[data-toggle]").forEach(a => a.addEventListener("click", e => {
+  e.preventDefault();
+  const card = a.closest(".card"), refs = card.querySelector(".refs");
+  const open = refs.hidden;
+  card.parentElement.querySelectorAll(".card").forEach(c => { c.classList.remove("open"); c.querySelector(".refs").hidden = true; });
+  if (open){ card.classList.add("open"); refs.hidden = false; }
+}));
+
+/* ---- B ---- */
+const tiles = document.getElementById("tilesB");
+tiles.innerHTML = CHARS.map((ch, i) => `
+  <div class="tile" style="--c:${ch.c}" data-i="${i}">
+    <div class="nm disp">${esc(ch.name)}</div>
+    <div class="big">${esc(ch.name[0])}</div>
+    <div class="st"><span>習得 <b>${ch.learned}</b></span><span>★ <b>${ch.fav}</b></span></div>
+  </div>`).join("") + '<div class="tile add">+ キャラを追加</div>';
+function selectB(i){
+  const ch = CHARS[i];
+  tiles.querySelectorAll(".tile").forEach((t, k) => t.classList.toggle("sel", k === i));
+  document.getElementById("panelB").innerHTML = `
+    <div style="--c:${ch.c}">
+      <h2 class="nm disp"><small>${esc(ch.en)}</small>${esc(ch.name)}</h2>
+      <div class="stats"><span>コンボ <b>${ch.total || "—"}</b></span><span>習得 <b>${ch.learned}</b></span><span>★ <b>${ch.fav}</b></span><span>更新 <b>${ch.up || "—"}</b></span></div>
+      <div class="bigmenu">
+        <a href="#"><span class="ic">01</span><span class="t">コンボ記録<span class="s">コンボ・セットプレイのレシピと動画</span></span></a>
+        <a href="#"><span class="ic">02</span><span class="t">キャラ対策<span class="s">このキャラへの対処法（準備中）</span></span></a>
+        <a href="#"><span class="ic">03</span><span class="t">参考情報<span class="s">解説動画・資料の概要と URL（${ch.refs.length} 件）</span></span></a>
+      </div>
+      <div class="refs"><h4>参考情報</h4>${refsHtml(ch)}</div>
+    </div>`;
+}
+tiles.addEventListener("click", e => { const t = e.target.closest(".tile[data-i]"); if (t) selectB(Number(t.dataset.i)); });
+selectB(0);
+
+/* ---- タブ（URL の #A / #B / #C で初期表示を指定できる） ---- */
+function showVariant(id){
+  document.querySelectorAll("#tabs button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === id)));
+  document.querySelectorAll(".variant").forEach(v => v.classList.toggle("on", v.id === id));
+  location.hash = id;
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => showVariant(b.dataset.v));
+if (/^#[ABC]$/.test(location.hash)) showVariant(location.hash.slice(1));
+</script>
+</body></html>

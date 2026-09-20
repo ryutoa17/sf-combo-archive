@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="sf6-tool" content="combo">
+<meta name="sf6-tool-version" content="3">
+<title>キャラ名 コンボレシピ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f6f3ee; --ink:#161616; --mute:#666; --kind:#ff3d7f; --warn:#e11d48;
+    --combo:#2563eb; --punish:#d97706; --impact:#b45309; --setup:#0f9d6a; --sep:#999;
+    /* レシピの色分け規則（使い方にも記載） */
+    --dr:#00c7a6; --di:#c5445e; --cmd:#2d1da5; --sa:#e07800; }
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.7; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+  [hidden]{ display:none !important; }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 20px 90px; }
+
+  /* ---------- タイトル（ポータルのロゴと同じ書式: キャラ名は黒、種別は種別色） ---------- */
+  .back{ margin-bottom:16px; }
+  .pill{ display:inline-block; font-size:12px; font-weight:900; color:var(--ink); border:2px solid var(--ink); border-radius:999px; padding:1px 12px; background:#fff; text-decoration:none; box-shadow:3px 3px 0 var(--ink); }
+  .pill:hover{ transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
+
+  header{ padding:32px 0 14px; display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; }
+  header .sp{ flex:1; }
+  .name{ margin:0; font-size:clamp(48px,9vw,80px); line-height:1; }
+  .name em{ font-style:normal; color:var(--kind); margin-left:.18em; }
+
+  .btn{ font:inherit; font-size:13px; font-weight:900; color:var(--ink); background:#fff; border:3px solid var(--ink); border-radius:12px; padding:8px 16px; cursor:pointer; box-shadow:4px 4px 0 var(--ink); transition:.1s; }
+  .btn:hover{ transform:translate(-1px,-1px); box-shadow:5px 5px 0 var(--ink); }
+  .btn:active{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--ink); }
+  .btn:focus-visible{ outline:3px solid var(--kind); outline-offset:2px; }
+  .btn.on{ background:var(--ink); color:#fff; }
+  .btn.kind{ background:var(--kind); color:#fff; }
+  .btn.danger:hover{ background:var(--warn); color:#fff; }
+  .btn.small{ font-size:11.5px; padding:2px 10px; border-width:2px; border-radius:8px; box-shadow:2px 2px 0 var(--ink); }
+  .btn.small:hover{ box-shadow:3px 3px 0 var(--ink); }
+
+
+  /* ---------- 背景画像（B1: 画面に固定、スクロールしても動かない） ---------- */
+  .bgimg{ position:fixed; inset:0; z-index:0; pointer-events:none; background:center/cover no-repeat; opacity:.45; mix-blend-mode:multiply; }
+  .bgimg.gray{ filter:grayscale(1); }
+  .wrap{ position:relative; z-index:1; }
+  #bgOp{ width:120px; }
+
+  /* ---------- 編集バー・フォーム ---------- */
+  .box{ background:rgba(255,255,255,.82); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:3px solid var(--ink); border-radius:18px; box-shadow:6px 6px 0 var(--ink); padding:16px 20px; margin:0 0 18px; }
+  #editbar{ display:none; }
+  body.editing #editbar{ display:block; }
+  .barrow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .barrow + .barrow{ margin-top:10px; }
+  .barrow label{ font-size:12px; font-weight:700; color:var(--mute); }
+  .barrow .hint{ font-size:11.5px; color:var(--mute); }
+  .status{ font-size:12px; color:var(--mute); margin:10px 0 0; }
+  .status b{ color:var(--ink); font-weight:900; }
+  #warn:not(:empty){ color:var(--warn); margin-top:6px; }
+  #form{ display:none; }
+  #form.open{ display:block; }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px 18px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field.wide{ grid-column:1/-1; }
+  .field label{ font-size:12px; font-weight:700; color:var(--mute); }
+  input[type=text], input[type=number], select, textarea{ font:inherit; font-size:14px; color:var(--ink); background:#fff; border:2px solid var(--ink); border-radius:10px; padding:7px 10px; width:100%; }
+  input:focus, select:focus, textarea:focus{ outline:none; border-color:var(--kind); }
+  textarea{ resize:vertical; min-height:64px; }
+  #charName{ width:auto; min-width:12em; }
+  #f_recipe{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  .checks{ display:flex; gap:14px; flex-wrap:wrap; padding-top:4px; }
+  .checks label{ display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; cursor:pointer; }
+  .checks input{ width:16px; height:16px; accent-color:var(--kind); }
+  .formfoot{ display:flex; gap:10px; margin-top:18px; align-items:center; flex-wrap:wrap; }
+  .formfoot .spacer{ flex:1; }
+  .drop{ border:2px dashed var(--ink); border-radius:12px; padding:14px; text-align:center; color:var(--mute); font-size:13px; cursor:pointer; }
+  .drop.hot{ border-color:var(--kind); color:var(--ink); }
+
+  /* ---------- フィルタ ---------- */
+  .filters{ padding:10px 0 6px; }
+  .fgroup{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:4px 0; font-size:13px; }
+  .fgroup > span{ font-weight:900; margin-right:4px; min-width:3.2em; }
+  .chip{ font:inherit; font-size:13px; font-weight:700; color:var(--ink); background:#fff; border:2px solid var(--ink); border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 var(--ink); cursor:pointer; }
+  .chip:hover{ transform:translate(-1px,-1px); box-shadow:4px 4px 0 var(--ink); }
+  .chip[aria-pressed="true"]{ background:var(--ink); color:#fff; }
+  .chip:focus-visible{ outline:3px solid var(--kind); outline-offset:2px; }
+  .count{ color:var(--mute); font-size:12px; margin:8px 0 16px; }
+  .count .prog{ color:var(--setup); font-weight:900; }
+
+  /* ---------- カード ---------- */
+  /* K5 ガラス: 半透明 + ぼかしで背景画像を透かす */
+  .combo{ background:rgba(255,255,255,.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); border:3px solid var(--ink); border-radius:18px; box-shadow:6px 6px 0 var(--ink); display:grid; grid-template-columns:minmax(0,400px) minmax(0,1fr); margin:0 0 22px; overflow:hidden; }
+  @media (max-width:820px){ .combo{ grid-template-columns:1fr; } .combo .clip{ border-right:0 !important; border-bottom:3px solid var(--ink); } }
+  .clip{ border-right:3px solid var(--ink); display:flex; flex-direction:column; position:relative; }
+  .clip video{ display:block; width:100%; height:auto; background:#000; flex:1; min-height:0; object-fit:contain; }
+  .missing{ background:#000; }
+  .missing{ flex:1; min-height:170px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:16px; text-align:center; color:#aaa; font-size:13px; }
+  .missing code{ color:#fff; font-size:12px; word-break:break-all; }
+  .missing.hot, .clip.hot{ outline:3px dashed var(--kind); outline-offset:-8px; }
+  /* 操作バーはカードのガラスの上に載るので、ぼかしは重ねない（入れ子の backdrop-filter は Chrome で描画されないことがある） */
+  .controls{ display:flex; gap:6px; align-items:center; padding:8px; background:rgba(255,255,255,.72); border-top:3px solid var(--ink); margin-top:auto; }
+  .controls .time{ margin-left:auto; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:11px; color:var(--mute); }
+  .body{ padding:18px 22px 16px; }
+  .taglist{ display:flex; gap:7px; flex-wrap:wrap; margin-bottom:10px; align-items:center; }
+  .tagchip{ font-size:11px; font-weight:900; border:2px solid currentColor; border-radius:999px; padding:0 10px; line-height:1.7; }
+  .fav, .learn{ font:inherit; font-weight:900; cursor:pointer; background:#fff; border:2px solid var(--ink); border-radius:999px; color:var(--mute); }
+  .fav{ font-size:14px; line-height:1; padding:2px 8px; margin-left:auto; }
+  .learn{ font-size:11.5px; padding:0 10px; line-height:1.7; }
+  .fav:hover, .learn:hover{ color:var(--ink); }
+  .fav[aria-pressed="true"]{ color:#fff; background:var(--punish); border-color:var(--ink); }
+  .learn[aria-pressed="true"]{ color:#fff; background:var(--setup); }
+  .combo.done .recipe, .combo.done .clip, .combo.done .note{ opacity:.6; }
+  .combo.done:hover .recipe, .combo.done:hover .clip, .combo.done:hover .note{ opacity:1; }
+  .recipe{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:clamp(16px,2.1vw,21px); font-weight:700; line-height:1.6; margin:0 0 14px; word-break:break-word; }
+  .t-normal{ color:var(--ink); } .t-cmd{ color:var(--cmd); } .t-sa{ color:var(--sa); } .t-dr{ color:var(--dr); } .t-di{ color:var(--di); }
+  .t-sep{ color:var(--sep); padding:0 .15em; font-weight:400; }
+  .stats{ display:flex; flex-wrap:wrap; gap:22px; align-items:center; }
+  .stat{ display:flex; align-items:baseline; gap:8px; }
+  .stat .k{ color:var(--mute); font-size:11.5px; font-weight:700; }
+  .stat .v{ font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:17px; font-weight:700; }
+  .gauge{ display:flex; gap:3px; align-items:center; }
+  .gauge i{ width:13px; height:16px; border:2px solid var(--ink); border-radius:3px; background:#fff; display:block; }
+  .gauge i.on{ background:var(--dr); }
+  .note{ margin:12px 0 0; font-size:14px; max-width:66ch; white-space:pre-wrap; }
+  .meta{ margin-top:12px; font-size:11.5px; color:#888; display:flex; gap:8px; flex-wrap:wrap; }
+  .meta > span + span::before{ content:"/ "; color:#bbb; }
+  .rowtools{ display:none; gap:6px; margin-top:14px; flex-wrap:wrap; }
+  body.editing .rowtools{ display:flex; }
+  .empty{ padding:60px 0; color:var(--mute); }
+
+  /* ---------- 使い方（ポータルと同じ折りたたみ） ---------- */
+  details.help{ margin-top:34px; border:3px solid var(--ink); border-radius:16px; background:rgba(255,255,255,.82); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); padding:12px 18px; font-size:13.5px; box-shadow:6px 6px 0 var(--ink); }
+  details.help summary{ cursor:pointer; font-weight:900; }
+  details.help ol{ padding-left:1.4em; margin:8px 0; } details.help li{ margin:4px 0; }
+  details.help code{ background:var(--paper); padding:0 5px; border-radius:4px; font-size:12.5px; }
+  details.help p{ margin:8px 0 0; }
+  details.help ul.tips{ padding-left:1.4em; margin:6px 0 0; } details.help ul.tips li{ margin:3px 0; }
+  details.help ul.rules{ list-style:none; padding:0; margin:6px 0 0; }
+  details.help ul.rules li{ display:flex; align-items:center; gap:8px; margin:3px 0; }
+  details.help .sw{ display:inline-block; width:14px; height:14px; border:2px solid var(--ink); border-radius:3px; flex:none; }
+  details.help .mono{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11.5px; color:var(--mute); }
+  @media (prefers-reduced-motion:reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="bgimg" id="bgimg" hidden></div>
+
+<div class="wrap">
+
+<header>
+  <div><a class="pill back" href="../../index.html">&larr; 一覧</a><h1 class="name disp"><span id="nameTxt">キャラ名</span><em>COMBO</em></h1></div>
+  <span class="sp"></span>
+  <button class="btn" id="editToggle">編集</button>
+</header>
+
+<div id="editbar" class="box">
+  <div class="barrow">
+    <label for="charName">キャラ名</label>
+    <input type="text" id="charName" value="キャラ名" autocomplete="off">
+    <span class="hint">名前は見出し・タブ名・習得状況の保存キーに使います</span>
+  </div>
+  <div class="barrow">
+    <label>背景画像</label>
+    <button class="btn small" id="bgPick" type="button">画像を選ぶ</button>
+    <button class="btn small" id="bgClear" type="button">外す</button>
+    <span class="hint" id="bgPath">（なし）</span>
+    <label for="bgOp">濃さ</label><input type="range" id="bgOp" min="5" max="80" value="45"><span class="hint" id="bgOpV">45%</span>
+    <label class="hint"><input type="checkbox" id="bgGray"> グレースケール</label>
+    <span class="hint" id="bgHint"></span>
+  </div>
+  <div class="barrow">
+    <button class="btn" id="addBtn">レシピを追加</button>
+    <button class="btn" id="linkBtn">作業フォルダを接続</button>
+    <button class="btn kind" id="saveBtn">HTMLを保存</button>
+    <button class="btn" id="shareBtn">配布用HTMLを書き出す</button>
+    <button class="btn" id="exportBtn">JSON書き出し</button>
+    <button class="btn" id="importBtn">JSON読み込み</button>
+    <input type="file" id="importFile" accept="application/json,.json" hidden>
+  </div>
+  <p class="status" id="status"></p>
+  <p class="status" id="warn"></p>
+</div>
+
+<div id="form" class="box">
+  <div class="grid">
+    <div class="field">
+      <label for="f_file">クリップ名（拡張子なし）</label>
+      <input type="text" id="f_file" placeholder="rashid_pc_5hp_corner" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="f_pos">位置</label>
+      <select id="f_pos"><option>中央</option><option>端</option></select>
+    </div>
+    <div class="field wide">
+      <label for="f_recipe">レシピ（半角スペース区切り）</label>
+      <input type="text" id="f_recipe" placeholder="PC 5HP &gt; DR 5MP &gt; 236HK" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="f_dmg">ダメージ</label>
+      <input type="number" id="f_dmg" min="0" step="10" placeholder="0">
+    </div>
+    <div class="field">
+      <label for="f_drive">Dゲージ消費（0〜6）</label>
+      <input type="number" id="f_drive" min="0" max="6" step="1" value="0">
+    </div>
+    <div class="field">
+      <label for="f_sa">SA</label>
+      <select id="f_sa">
+        <option value="0">なし</option><option value="1">SA1</option>
+        <option value="2">SA2</option><option value="3">SA3</option>
+      </select>
+    </div>
+    <div class="field wide">
+      <label>タグ</label>
+      <div class="checks" id="f_tags"></div>
+    </div>
+    <div class="field wide">
+      <label for="f_note">メモ</label>
+      <textarea id="f_note" placeholder="相手キャラ限定 / ここだけ少し遅らせる など"></textarea>
+    </div>
+    <div class="field wide">
+      <div class="drop" id="f_drop">動画をここにドロップ、またはクリックして選択</div>
+    </div>
+    <div class="field wide" id="pickWrap" hidden>
+      <label for="f_pick">接続フォルダ内の動画から選ぶ</label>
+      <select id="f_pick"><option value="">選択しない</option></select>
+    </div>
+  </div>
+  <div class="formfoot">
+    <button class="btn on" id="okBtn">保存</button>
+    <button class="btn" id="cancelBtn">取消</button>
+    <span class="spacer"></span>
+    <button class="btn danger" id="delBtn">このレシピを削除</button>
+  </div>
+</div>
+
+<div class="filters" id="filters"></div>
+<p class="count" id="count"></p>
+
+<main id="list"></main>
+
+<details class="help" id="help">
+  <summary>使い方</summary>
+  <ol>
+    <li>「編集」→ 編集バーの「キャラ名」を入力し、「背景画像」を好みで設定する。キャラ名はポータルに登録した名前と同じにする（習得状況の表示に使う）</li>
+    <li>録画した動画は <code>compress.bat</code> にドラッグ&amp;ドロップすると <code>clips/</code> に軽量化される（<code>ffmpeg.exe</code> は <code>スト６/</code> 直下に1つ置く）</li>
+    <li>「作業フォルダを接続」でこのフォルダ（<code>COMBO_DB/&lt;キャラ名&gt;/</code>）を選ぶと、動画の書き込みと再生ができる</li>
+    <li>「レシピを追加」→ クリップ名・レシピ（半角スペース区切り。色分けは下記の規則）・ダメージ・Dゲージ・SA・タグ・メモを入力し、動画をドロップか「接続フォルダ内の動画から選ぶ」</li>
+    <li>カードの ☆ でお気に入り、「未習得」で習得済みを切り替え。上部のチップで絞り込み、「並び順」で並べ替え</li>
+    <li>変更したら「HTMLを保存」で <code>combo.html</code> を上書きする。「配布用HTMLを書き出す」は動画を埋め込んだ1ファイルを作る</li>
+  </ol>
+  <p><b>背景画像の選び方</b>（コンボDB）</p>
+  <ul class="tips">
+    <li>このキャラの<b>キーアート</b>や公式イラストが向く。置き場所は <code>画像/&lt;キャラ名&gt;/</code>（キャラ名はこの画面で設定した名前と同じ英字）</li>
+    <li>動画カードが左、レシピが右に並ぶので、キャラが右側にある画像だと動画に隠れにくい</li>
+    <li><b>大きさ</b>: 横長（16:9 前後）で、幅 1920px 以上が目安（最低でも画面幅の 1280px）。画面いっぱいに拡大して敷かれるため、小さい画像はぼやける</li>
+    <li><b>明るさ</b>: 明るめで淡い画像が向く。紙色の上に「乗算」で重ねるので、白い部分は紙色のまま、暗い部分だけが沈む。暗い画像は 45% でも重く見えるので濃さを下げる</li>
+    <li><b>構図</b>: 被写体（キャラ）が中央〜右にある画像。左上に見出し、左側にカードや動画が並ぶので、左に顔があると隠れる</li>
+    <li><b>避けるもの</b>: 文字やロゴが大きく入った画像（見出しと重なる）、細かい模様（グレースケールにすると濁る）、縦長の画像（左右が切れる）</li>
+    <li><b>濃さ</b>: 色ありなら 30〜45%、グレースケールなら 20〜35% が目安。カードの上の文字は影響を受けないので、雰囲気と背景の見やすさで決める</li>
+    <li><b>形式</b>: JPG（写真・アート）か PNG。1枚 2MB 以内にしておくと開くのが速い</li>
+  </ul>
+  <p><b>レシピの色分け規則</b>（半角スペースで区切った各トークンに自動で色が付く）</p>
+  <ul class="rules">
+    <li><span class="sw" style="background:#00c7a6"></span><b>DR / CDR / Dゲージ</b>: ドライブラッシュ、キャンセルドライブラッシュ、Dゲージの塗り <span class="mono">R0 G199 B166</span></li>
+    <li><span class="sw" style="background:#c5445e"></span><b>DI</b>: ドライブインパクト <span class="mono">R197 G68 B94</span></li>
+    <li><span class="sw" style="background:#2d1da5"></span><b>コマンド技</b>: <code>214MK</code> <code>236HK</code> <code>623P</code> <code>[4]6P</code> のように数字コマンドで始まるもの <span class="mono">R45 G29 B165</span></li>
+    <li><span class="sw" style="background:#e07800"></span><b>SA1 / SA2 / SA3 / CA</b>（<code>236236P</code> などの SA コマンドも同じ） <span class="mono">R224 G120 B0</span></li>
+    <li><span class="sw" style="background:#161616"></span>それ以外（通常技、技名、PC / CH など）は黒</li>
+  </ul>
+  <p>クリップの再生: クリックで再生 / 停止、◀ ▶ で 1/20 秒ずつコマ送り。動画にフォーカスがあるときは ← → キーでも動く。タグの種類は HTML 内の <code>TAG_ORDER</code>、色は <code>:root</code> の <code>--dr</code> <code>--di</code> <code>--cmd</code> <code>--sa</code> で変えられる。</p>
+</details>
+
+</div>
+
+<script type="application/json" id="combo-data">
+{
+  "bg": {
+    "image": "",
+    "opacity": 0.45,
+    "gray": false
+  },
+  "combos": []
+}
+</script>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const today = () => new Date().toISOString().slice(0, 10);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+
+const FPS = 20;
+/* タグの定義はここが唯一の場所。追加・並び替えはこの2つを編集する */
+const TAG_ORDER = ["コンボ", "パニカン", "インパクトパニカン", "壁インパクト", "セットプレイ"];
+const TAG_COLOR = {
+  "コンボ":             "var(--combo)",
+  "パニカン":           "var(--punish)",
+  "インパクトパニカン": "var(--impact)",
+  "壁インパクト":       "var(--impact)",
+  "セットプレイ":       "var(--setup)"
+};
+
+/* データ: { color, combos[] }。旧形式（配列のみ）も受け付ける */
+const RAW = JSON.parse($("#combo-data").textContent);
+let DATA = Array.isArray(RAW) ? { color:"#00c9a7", combos:RAW } : RAW;
+DATA.combos = DATA.combos || [];
+delete DATA.color;
+let COMBOS = DATA.combos;
+
+const srcMap = new Map();
+let rootDir = null, clipsDir = null, dirFiles = new Map(), dirty = false;
+const fileNameOf = c => c.src || (c.file + ".mp4");
+
+/* ============ 接続フォルダ ============ */
+async function scanDir(){
+  dirFiles.clear();
+  if (!clipsDir) return;
+  for await (const [name, h] of clipsDir.entries()){
+    if (h.kind === "file" && /\.(mp4|webm|mov|m4v)$/i.test(name)) dirFiles.set(name, h);
+  }
+}
+function lookupHandle(name){
+  if (dirFiles.has(name)) return dirFiles.get(name);
+  const lower = name.toLowerCase();
+  for (const [k, v] of dirFiles) if (k.toLowerCase() === lower) return v;
+  return null;
+}
+async function resolveAll(){
+  for (const u of srcMap.values()) URL.revokeObjectURL(u);
+  srcMap.clear();
+  if (!clipsDir) return;
+  for (const c of COMBOS){
+    if (c.data) continue;
+    const h = lookupHandle(fileNameOf(c));
+    if (!h) continue;
+    try{ srcMap.set(c.file, URL.createObjectURL(await h.getFile())); }catch(e){}
+  }
+}
+function fillPicker(){
+  const wrap = $("#pickWrap"), sel = $("#f_pick");
+  wrap.hidden = !clipsDir;
+  if (!clipsDir) return;
+  const names = [...dirFiles.keys()].sort((a, b) => a.localeCompare(b, "ja"));
+  sel.innerHTML = '<option value="">選択しない</option>' + names.map(n => '<option value="' + esc(n) + '">' + esc(n) + "</option>").join("");
+}
+const FSA = "showDirectoryPicker" in window;
+
+function say(msg){ $("#status").innerHTML = msg; }
+function statusLine(){
+  const dir = clipsDir
+    ? ("<b>" + esc(rootDir ? rootDir.name + "/" + clipsDir.name : clipsDir.name) + "</b>（動画 " + dirFiles.size + " 本）")
+    : "未接続";
+  say("レシピ " + COMBOS.length + " 件 / 動画フォルダ: " + dir + (dirty ? " / <b>未保存の変更があります</b>" : ""));
+  $("#warn").innerHTML = (clipsDir && !rootDir && clipsDir.name !== "clips")
+    ? "combo.html の隣の clips ではないフォルダを見ています。編集中は再生できますが、保存したHTMLを別の場所で開くと動画が表示されません。" : "";
+}
+function touch(){ dirty = true; rebuild(); }
+
+/* ============ キャラ名・色 ============ */
+const charName = () => ($("#nameTxt") ? $("#nameTxt").textContent.trim() : "") || "default";
+const lsKey = k => "combo_" + k + ":" + charName();
+
+/* ============ 表記の色分け ============ */
+const RE_MOTION = /^(?:\[?[1-9](?:\]|\[)?)*(?:236236|214214|632146|2141236|41236236|236|214|623|421|41236|63214|22)/;
+function classify(tok){
+  const t = tok.toUpperCase();
+  if (/^(SA[123]|CA)$/.test(t)) return "t-sa";
+  if (t === "DI") return "t-di";
+  if (/^(DR|CDR|DRC)$/.test(t)) return "t-dr";
+  if (/^\[[1-9]\][1-9]/.test(t)) return "t-cmd";   /* タメ技: [4]6P, [2]8K */
+  if (RE_MOTION.test(t)) return /236236|214214|632146|2141236|41236236/.test(t) ? "t-sa" : "t-cmd";
+  return "t-normal";
+}
+function renderRecipe(str){
+  return String(str).split(/\s+/).map(tok =>
+    /^[>,~()\[\]+]+$/.test(tok)
+      ? '<span class="t-sep">' + esc(tok) + "</span>"
+      : '<span class="' + classify(tok) + '">' + esc(tok) + "</span>"
+  ).join(" ");
+}
+function gauge(n){
+  let out = '<span class="gauge" aria-label="ドライブゲージ ' + n + '本">';
+  for (let i = 0; i < 6; i++) out += '<i class="' + (i < n ? "on" : "") + '"></i>';
+  return out + "</span>";
+}
+
+/* ============ 習得状況・お気に入り ============ */
+let learned = new Set(), fav = new Set();
+function loadFlag(k){
+  const seed = COMBOS.filter(c => c[k]).map(c => c.file);
+  try{ const raw = localStorage.getItem(lsKey(k)); if (raw) return new Set(JSON.parse(raw)); }catch(e){}
+  return new Set(seed);
+}
+function saveFlag(k, set){
+  COMBOS.forEach(c => { if (set.has(c.file)) c[k] = true; else delete c[k]; });
+  try{ localStorage.setItem(lsKey(k), JSON.stringify([...set])); }catch(e){}
+}
+function loadLearned(){ learned = loadFlag("learned"); fav = loadFlag("fav"); }
+function saveLearned(){ saveFlag("learned", learned); saveFlag("fav", fav); }
+
+/* ============ 埋め込み動画の展開 ============ */
+let embedded = false;
+function b64ToBlob(uri){
+  const i = uri.indexOf(","), mime = (uri.slice(5, i).split(";")[0]) || "video/mp4";
+  const bin = atob(uri.slice(i + 1)), buf = new Uint8Array(bin.length);
+  for (let k = 0; k < bin.length; k++) buf[k] = bin.charCodeAt(k);
+  return new Blob([buf], { type:mime });
+}
+async function hydrate(){
+  const targets = COMBOS.filter(c => c.data);
+  if (!targets.length) return;
+  embedded = true;
+  for (let i = 0; i < targets.length; i++){
+    const c = targets[i];
+    $("#count").textContent = "動画を展開中 " + (i + 1) + " / " + targets.length;
+    try{
+      let blob;
+      try{ blob = await (await fetch(c.data)).blob(); }catch(e){ blob = b64ToBlob(c.data); }
+      srcMap.set(c.file, URL.createObjectURL(blob));
+      delete c.data;
+    }catch(e){}
+    await new Promise(r => setTimeout(r, 0));
+  }
+  rebuild();
+}
+
+/* ============ カード ============ */
+function card(c){
+  const i = COMBOS.indexOf(c);
+  const el = document.createElement("article");
+  el.className = "combo" + (learned.has(c.file) ? " done" : "");
+  const tags = (c.tags || []).map(t =>
+    '<span class="tagchip" style="color:' + (TAG_COLOR[t] || "var(--mute)") + '">' + esc(t) + "</span>"
+  ).join("");
+  el.innerHTML =
+    '<div class="clip">' +
+      '<video preload="metadata" loop muted playsinline tabindex="0"></video>' +
+      '<div class="controls">' +
+        '<button class="btn small" data-act="play">再生</button>' +
+        '<button class="btn small" data-act="prev" title="1フレーム戻る">&#9664;</button>' +
+        '<button class="btn small" data-act="next" title="1フレーム進む">&#9654;</button>' +
+        '<button class="btn small" data-act="reset">頭出し</button>' +
+        '<span class="time">0.00s</span>' +
+      "</div></div>" +
+    '<div class="body">' +
+      '<div class="taglist">' + tags +
+        '<button class="fav" data-row="fav" aria-pressed="' + fav.has(c.file) + '" title="お気に入り">' + (fav.has(c.file) ? "★" : "☆") + "</button>" +
+        '<button class="learn" data-row="learn" aria-pressed="' + learned.has(c.file) + '">' + (learned.has(c.file) ? "✓ 習得済み" : "未習得") + "</button></div>" +
+      '<p class="recipe">' + renderRecipe(c.recipe) + "</p>" +
+      '<div class="stats">' +
+        '<span class="stat"><span class="k">ダメージ</span><span class="v">' + (c.damage || "—") + "</span></span>" +
+        '<span class="stat"><span class="k">Dゲージ</span>' + gauge(c.drive) + "</span>" +
+        '<span class="stat"><span class="k">SA</span><span class="v">' + (c.sa ? "SA" + c.sa : "—") + "</span></span>" +
+      "</div>" +
+      (c.note ? '<p class="note">' + esc(c.note) + "</p>" : "") +
+      '<div class="meta"><span>' + esc(c.position) + "</span><span>" + esc(c.file) + "</span>" +
+        (c.updated ? "<span>更新 " + esc(c.updated) + "</span>" : "") + "</div>" +
+      '<div class="rowtools">' +
+        '<button class="btn small" data-row="edit">編集</button>' +
+        (sortKey === "manual"
+          ? '<button class="btn small" data-row="up">↑</button><button class="btn small" data-row="down">↓</button>'
+          : '<span class="tagchip" style="color:var(--mute)">並べ替え中は移動できません</span>') +
+        '<button class="btn small" data-row="dup">複製</button>' +
+      "</div>" +
+    "</div>";
+
+  const v = $("video", el), time = $(".time", el);
+  v.src = srcMap.get(c.file) || c.data || ("clips/" + fileNameOf(c));
+  v.setAttribute("aria-label", c.recipe + " のクリップ");
+  v.addEventListener("error", () => {
+    const box = document.createElement("div");
+    box.className = "missing";
+    box.innerHTML = "<span>クリップ未配置</span><code>" + (clipsDir ? esc(clipsDir.name) : "clips") + "/" + esc(fileNameOf(c)) + "</code>" +
+      (document.body.classList.contains("editing") ? '<span style="font-size:12px">ここに動画をドロップ</span>' : "");
+    v.replaceWith(box);
+    wireDrop(box, c);
+  });
+
+  const step = d => { v.pause(); v.currentTime = Math.max(0, v.currentTime + d / FPS); };
+  const sync = () => { time.textContent = v.currentTime.toFixed(2) + "s"; };
+  const toggle = () => v.paused ? v.play() : v.pause();
+  v.addEventListener("timeupdate", sync); v.addEventListener("seeked", sync);
+  v.addEventListener("click", toggle);
+  v.addEventListener("keydown", e => {
+    if (e.key === " " || e.key === "Enter"){ e.preventDefault(); toggle(); }
+    if (e.key === "ArrowRight"){ e.preventDefault(); step(1); }
+    if (e.key === "ArrowLeft"){ e.preventDefault(); step(-1); }
+  });
+  v.addEventListener("play",  () => { $('[data-act="play"]', el).textContent = "停止"; });
+  v.addEventListener("pause", () => { $('[data-act="play"]', el).textContent = "再生"; });
+  wireDrop($(".clip", el), c);
+
+  el.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.act){
+      const a = b.dataset.act;
+      if (a === "play") toggle(); if (a === "next") step(1); if (a === "prev") step(-1);
+      if (a === "reset"){ v.pause(); v.currentTime = 0; }
+      return;
+    }
+    const r = b.dataset.row; if (!r) return;
+    if (r === "learn" || r === "fav"){
+      const set = r === "learn" ? learned : fav;
+      if (set.has(c.file)) set.delete(c.file); else set.add(c.file);
+      saveLearned(); paint(); return;
+    }
+    if (r === "edit") openForm(i);
+    if (r === "dup"){ const d = JSON.parse(JSON.stringify(c)); d.created = d.updated = today(); COMBOS.splice(i + 1, 0, d); touch(); }
+    if (r === "up" && i > 0){ COMBOS.splice(i - 1, 0, COMBOS.splice(i, 1)[0]); touch(); }
+    if (r === "down" && i < COMBOS.length - 1){ COMBOS.splice(i + 1, 0, COMBOS.splice(i, 1)[0]); touch(); }
+  });
+  return el;
+}
+
+/* ============ 動画の受け取り ============ */
+function wireDrop(target, combo){
+  target.addEventListener("dragover", e => { if (!document.body.classList.contains("editing")) return; e.preventDefault(); target.classList.add("hot"); });
+  target.addEventListener("dragleave", () => target.classList.remove("hot"));
+  target.addEventListener("drop", async e => {
+    if (!document.body.classList.contains("editing")) return;
+    e.preventDefault(); e.stopPropagation(); target.classList.remove("hot");
+    const f = e.dataTransfer.files[0];
+    if (f) await attachVideo(f, combo);
+  });
+}
+async function attachVideo(file, combo){
+  const name = combo.file + ".mp4";
+  const mb = (file.size / 1048576).toFixed(1);
+  if (clipsDir){
+    try{
+      const exists = lookupHandle(name);
+      if (exists && !confirm(clipsDir.name + " に " + name + " が既にあります。\n\n上書きすると元のファイルは復元できません。続けますか？")){ say("中止しました"); return; }
+      const fh = await clipsDir.getFileHandle(name, { create:true });
+      const w = await fh.createWritable(); await w.write(file); await w.close();
+      combo.src = name;
+      await scanDir(); await resolveAll(); fillPicker(); rebuild();
+      say("<b>" + clipsDir.name + "/" + name + "</b> に書き込みました（" + mb + " MB）");
+      return;
+    }catch(err){ say("書き込みに失敗しました: " + err.message); }
+  }
+  srcMap.set(combo.file, URL.createObjectURL(file));
+  rebuild();
+  say("プレビュー中です。<b>" + name + "</b> という名前で clips フォルダに置くと次回から読み込まれます");
+}
+
+/* ============ フィルタ・並び順 ============ */
+const AXES = [
+  { key:"position", label:"位置", values:["中央","端"] },
+  { key:"tags",     label:"タグ", values:TAG_ORDER, multi:true },
+  { key:"sa",       label:"SA",   values:[0,1,2,3], fmt:v => v ? "SA" + v : "なし" },
+  { key:"learned",  label:"習得", values:[false, true], fmt:v => v ? "習得済み" : "未習得", get:c => learned.has(c.file) },
+  { key:"fav",      label:"お気に入り", values:[true], fmt:() => "★ お気に入りのみ", get:c => fav.has(c.file) }
+];
+const SORTS = [
+  { key:"manual", label:"記述順" },
+  { key:"damage", label:"ダメージ", dir:-1, val:c => c.damage || 0 },
+  { key:"drive",  label:"Dゲージ",  dir:1,  val:c => c.drive  || 0 },
+  { key:"eff",    label:"効率",     dir:-1, val:c => (c.damage || 0) / (c.drive || 0.5) }
+];
+let sortKey = "manual", sortDir = 0, sortGroup = null;
+const state = {};
+let groups = [];
+
+function buildFilters(){
+  const box = $("#filters"); box.innerHTML = ""; groups = [];
+  AXES.forEach(ax => {
+    const g = document.createElement("div"); g.className = "fgroup";
+    g.innerHTML = "<span>" + ax.label + "</span>";
+    const all = document.createElement("button"); all.className = "chip"; all.textContent = "すべて";
+    all.onclick = () => { state[ax.key] = undefined; paint(); };
+    g.appendChild(all);
+    const btns = ax.values.map(v => {
+      const b = document.createElement("button"); b.className = "chip"; b.textContent = ax.fmt ? ax.fmt(v) : v;
+      b.onclick = () => { state[ax.key] = state[ax.key] === v ? undefined : v; paint(); };
+      g.appendChild(b); return { btn:b, value:v };
+    });
+    box.appendChild(g); groups.push({ ax, all, btns });
+  });
+  const g = document.createElement("div"); g.className = "fgroup"; g.innerHTML = "<span>並び順</span>";
+  sortGroup = SORTS.map(so => {
+    const b = document.createElement("button"); b.className = "chip";
+    b.onclick = () => {
+      if (so.key === "manual"){ sortKey = "manual"; sortDir = 0; }
+      else if (sortKey === so.key) sortDir = -sortDir;
+      else { sortKey = so.key; sortDir = so.dir; }
+      paint();
+    };
+    g.appendChild(b); return { btn:b, so };
+  });
+  box.appendChild(g);
+}
+function sortRows(rows){
+  if (sortKey === "manual") return rows;
+  const so = SORTS.find(x => x.key === sortKey);
+  return rows.map((c, i) => ({ c, i })).sort((a, b) => {
+    const d = (so.val(a.c) - so.val(b.c)) * sortDir;
+    return d || a.i - b.i;
+  }).map(x => x.c);
+}
+function matches(c){
+  return AXES.every(ax => {
+    const sel = state[ax.key];
+    if (sel === undefined) return true;
+    const val = ax.get ? ax.get(c) : c[ax.key];
+    return Array.isArray(val) ? val.includes(sel) : val === sel;
+  });
+}
+function paint(){
+  const rows = sortRows(COMBOS.filter(matches));
+  const list = $("#list"); list.innerHTML = "";
+  if (!COMBOS.length) list.innerHTML = '<p class="empty">レシピはまだありません。「編集」→「レシピを追加」から始めてください。</p>';
+  else if (!rows.length) list.innerHTML = '<p class="empty">条件に合うコンボがありません。フィルタを外してください。</p>';
+  else rows.forEach(c => list.appendChild(card(c)));
+  const done = COMBOS.filter(c => learned.has(c.file)).length;
+  $("#count").innerHTML = rows.length + " / " + COMBOS.length + " 件" + (COMBOS.length ? '　<span class="prog">習得 ' + done + " / " + COMBOS.length + "</span>" : "");
+  sortGroup.forEach(({ btn, so }) => {
+    const on = sortKey === so.key;
+    btn.setAttribute("aria-pressed", String(on));
+    btn.textContent = so.label + (on && so.key !== "manual" ? (sortDir < 0 ? " ↓" : " ↑") : "");
+  });
+  groups.forEach(({ ax, all, btns }) => {
+    const sel = state[ax.key];
+    all.setAttribute("aria-pressed", String(sel === undefined));
+    btns.forEach(({ btn, value }) => btn.setAttribute("aria-pressed", String(sel === value)));
+  });
+}
+function rebuild(){ paint(); statusLine(); }
+
+/* ============ フォーム ============ */
+let editing = -1;
+$("#f_tags").innerHTML = TAG_ORDER.map(t => '<label><input type="checkbox" value="' + t + '">' + t + "</label>").join("");
+function openForm(idx){
+  editing = idx;
+  const c = idx < 0 ? { file:"", recipe:"", damage:0, drive:0, sa:0, tags:[], position:"中央", note:"" } : COMBOS[idx];
+  $("#f_file").value = c.file; $("#f_recipe").value = c.recipe;
+  $("#f_dmg").value = c.damage || ""; $("#f_drive").value = c.drive || 0;
+  $("#f_sa").value = String(c.sa || 0); $("#f_pos").value = c.position || "中央"; $("#f_note").value = c.note || "";
+  document.querySelectorAll("#f_tags input").forEach(cb => { cb.checked = (c.tags || []).includes(cb.value); });
+  fillPicker();
+  $("#f_pick").value = (clipsDir && c.src && lookupHandle(c.src)) ? c.src : "";
+  $("#delBtn").style.display = idx < 0 ? "none" : "";
+  $("#f_drop").textContent = "動画をここにドロップ、またはクリックして選択"; drop._file = null;
+  $("#form").classList.add("open"); $("#form").scrollIntoView({ block:"nearest" }); $("#f_file").focus();
+}
+function closeForm(){ editing = -1; $("#form").classList.remove("open"); }
+function readForm(){
+  const file = $("#f_file").value.trim().replace(/\.(mp4|webm|mov)$/i, "");
+  if (!file){ say("クリップ名を入力してください"); return null; }
+  const picked = $("#f_pick").value;
+  let src = picked || undefined;
+  if (!src && clipsDir){ const h = lookupHandle(file + ".mp4"); if (h && h.name !== file + ".mp4") src = h.name; }
+  return {
+    file, src,
+    recipe: $("#f_recipe").value.trim(),
+    damage: Number($("#f_dmg").value) || 0,
+    drive:  Math.max(0, Math.min(6, Number($("#f_drive").value) || 0)),
+    sa:     Number($("#f_sa").value) || 0,
+    tags:   [...document.querySelectorAll("#f_tags input:checked")].map(cb => cb.value),
+    position: $("#f_pos").value,
+    note:   $("#f_note").value.trim()
+  };
+}
+$("#cancelBtn").onclick = closeForm;
+$("#delBtn").onclick = () => {
+  if (editing < 0) return;
+  if (!confirm("このレシピを削除しますか？")) return;
+  COMBOS.splice(editing, 1); closeForm(); touch();
+};
+$("#addBtn").onclick = () => openForm(-1);
+
+const drop = $("#f_drop");
+const picker = document.createElement("input"); picker.type = "file"; picker.accept = "video/mp4,video/webm,video/*";
+function formVideo(f){
+  if (!f) return;
+  if (!$("#f_file").value.trim()) $("#f_file").value = f.name.replace(/\.[^.]+$/, "");
+  drop.textContent = f.name + "（保存時に書き込みます）"; drop._file = f;
+}
+picker.onchange = () => formVideo(picker.files[0]);
+drop.onclick = () => picker.click();
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("hot"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("hot"); formVideo(e.dataTransfer.files[0]); });
+
+$("#okBtn").onclick = async () => {
+  const c = readForm(); if (!c) return;
+  c.updated = today();
+  if (editing < 0){ c.created = c.updated; COMBOS.push(c); }
+  else { c.created = COMBOS[editing].created || c.updated; COMBOS[editing] = c; }
+  if (drop._file){ await attachVideo(drop._file, c); drop._file = null; } else { await resolveAll(); }
+  saveLearned(); closeForm(); touch();
+};
+
+/* ============ フォルダ接続 ============ */
+$("#linkBtn").onclick = async () => {
+  if (!FSA){ say("このブラウザはフォルダ接続に対応していません。Chrome / Edge で開くか、動画を手動で clips に置いてください"); return; }
+  try{
+    const picked = await window.showDirectoryPicker({ mode:"readwrite", id:"comboRoot", startIn: rootDir || clipsDir || "desktop" });
+    let isRoot = false;
+    for await (const [name, h] of picked.entries()){ if (h.kind === "file" && /\.html?$/i.test(name)){ isRoot = true; break; } }
+    if (isRoot){ rootDir = picked; clipsDir = await picked.getDirectoryHandle("clips", { create:true }); }
+    else { rootDir = null; clipsDir = picked; }
+    await scanDir(); await resolveAll(); fillPicker();
+    $("#linkBtn").classList.add("on"); $("#linkBtn").textContent = "接続: " + picked.name;
+    rebuild();
+  }catch(e){ /* キャンセル */ }
+};
+
+/* ============ 保存 ============ */
+function buildHtml(list){
+  const doc = document.documentElement.cloneNode(true);
+  doc.querySelector("#combo-data").textContent = "\n" + JSON.stringify({ bg: DATA.bg, combos: list || COMBOS }, null, 2) + "\n";
+  doc.querySelector("#list").innerHTML = ""; doc.querySelector("#filters").innerHTML = "";
+  ["#count", "#status", "#warn"].forEach(s => { doc.querySelector(s).textContent = ""; });
+  doc.querySelector("#form").classList.remove("open");
+  doc.querySelector("#linkBtn").className = "btn"; doc.querySelector("#linkBtn").textContent = "作業フォルダを接続";
+  const pw = doc.querySelector("#pickWrap"); pw.setAttribute("hidden", ""); pw.querySelector("select").innerHTML = '<option value="">選択しない</option>';
+  const et = doc.querySelector("#editToggle"); et.className = "btn"; et.textContent = "編集";
+  doc.querySelector("#charName").setAttribute("value", charName());
+  const bgEl = doc.querySelector("#bgimg"); bgEl.removeAttribute("style"); bgEl.className = "bgimg"; bgEl.setAttribute("hidden", "");
+
+  doc.querySelector("title").textContent = charName() + " コンボレシピ";
+  doc.removeAttribute("style");   /* 実行時に付けた --c を外す */
+  doc.querySelector("#help").removeAttribute("open");
+  doc.querySelector("body").className = "";
+  return "<!DOCTYPE html>\n" + doc.outerHTML;
+}
+function download(name, text, type){
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
+$("#saveBtn").onclick = async () => {
+  if (embedded && !clipsDir && !confirm("このファイルは配布用（動画を埋め込んだもの）です。\n\nこのまま保存すると動画が外れ、レシピだけのHTMLになります。\n続けますか？")) return;
+  saveLearned();
+  const html = buildHtml(COMBOS.map(c => { const d = Object.assign({}, c); delete d.data; return d; }));
+  if ("showSaveFilePicker" in window){
+    try{
+      const fh = await window.showSaveFilePicker({ suggestedName:"combo.html", id:"comboRoot", startIn: rootDir || clipsDir || undefined, types:[{ description:"HTML", accept:{ "text/html":[".html"] } }] });
+      const w = await fh.createWritable(); await w.write(html); await w.close();
+      dirty = false; statusLine(); say("保存しました"); return;
+    }catch(e){ if (e.name === "AbortError") return; }
+  }
+  download("combo.html", html, "text/html");
+  dirty = false; statusLine(); say("ダウンロードした combo.html で元のファイルを差し替えてください");
+};
+$("#shareBtn").onclick = async () => {
+  if (!clipsDir){ say("先に「作業フォルダを接続」を押してください。動画を読み込めないと埋め込めません"); return; }
+  const list = JSON.parse(JSON.stringify(COMBOS));
+  list.forEach(c => { delete c.learned; delete c.fav; });
+  const missing = []; let total = 0;
+  for (let i = 0; i < list.length; i++){
+    const c = list[i];
+    const h = lookupHandle(c.src || (c.file + ".mp4"));
+    if (!h){ missing.push(c.file); continue; }
+    say("埋め込み中 " + (i + 1) + " / " + list.length + " ... " + esc(c.file));
+    const f = await h.getFile(); total += f.size;
+    c.data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(new Error("読み込み失敗")); r.readAsDataURL(f); });
+  }
+  const mb = (total * 1.34 / 1048576).toFixed(1);
+  if (total * 1.34 > 200 * 1048576 && !confirm("書き出しサイズが約 " + mb + " MB になります。続けますか？")){ say("中止しました"); return; }
+  const shareHtml = buildHtml(list);
+  let saved = false;
+  if ("showSaveFilePicker" in window){
+    try{
+      const fh = await window.showSaveFilePicker({ suggestedName:"combo_share.html", id:"comboRoot", startIn: rootDir || clipsDir || undefined, types:[{ description:"HTML", accept:{ "text/html":[".html"] } }] });
+      const w = await fh.createWritable(); await w.write(shareHtml); await w.close(); saved = true;
+    }catch(e){ if (e.name === "AbortError"){ say("中止しました"); return; } }
+  }
+  if (!saved) download("combo_share.html", shareHtml, "text/html");
+  let msg = "配布用HTMLを書き出しました（約 " + mb + " MB）。このファイル1つで再生できます";
+  if (missing.length) msg += " / 動画が見つからなかったレシピ: <b>" + missing.map(esc).join(", ") + "</b>";
+  say(msg);
+};
+$("#exportBtn").onclick = () => download("combos.json", JSON.stringify({ bg: DATA.bg, combos: COMBOS }, null, 2), "application/json");
+$("#importBtn").onclick = () => $("#importFile").click();
+$("#importFile").onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    const combos = Array.isArray(d) ? d : d.combos;
+    if (!Array.isArray(combos)) throw new Error("配列ではありません");
+    if (!confirm("現在のデータを読み込んだ内容で置き換えます。よろしいですか？")) return;
+    COMBOS = combos; DATA.combos = COMBOS;
+    if (d.bg){ DATA.bg = Object.assign({ image:"", opacity:.45, gray:false }, d.bg); bgPreview = null; applyBg(); }
+    loadLearned(); await resolveAll(); closeForm(); touch(); say("読み込みました");
+  }catch(err){ say("読み込めませんでした: " + esc(err.message)); }
+  e.target.value = "";
+};
+
+
+/* ============ 背景画像（B1: 固定・1枚） ============ */
+DATA.bg = Object.assign({ image:"", opacity:.45, gray:false }, DATA.bg || {});
+let bgPreview = null;
+function applyBg(){
+  const el = $("#bgimg"), b = DATA.bg;
+  /* データはルート（スト６/）基準のパス。このファイルは2階層下にあるので ../../ を補う */
+  const src = bgPreview || (b.image ? "../../" + encodeURI(b.image) : "");
+  el.hidden = !src;
+  el.style.backgroundImage = src ? 'url("' + src + '")' : "";
+  el.style.opacity = b.opacity;
+  el.classList.toggle("gray", !!b.gray);
+  $("#bgPath").textContent = b.image || "（なし）";
+  $("#bgOp").value = Math.round(b.opacity * 100); $("#bgOpV").textContent = Math.round(b.opacity * 100) + "%";
+  $("#bgGray").checked = !!b.gray;
+  $("#bgHint").textContent = "「画像/" + (charName()) + "/」に置いたファイルを選んでください";
+}
+const bgPicker = document.createElement("input"); bgPicker.type = "file"; bgPicker.accept = "image/*";
+$("#bgPick").onclick = () => bgPicker.click();
+bgPicker.onchange = () => {
+  const f = bgPicker.files[0]; if (!f) return;
+  DATA.bg.image = "画像/" + (charName()) + "/" + f.name;
+  if (bgPreview) URL.revokeObjectURL(bgPreview);
+  bgPreview = URL.createObjectURL(f);
+  bgPicker.value = ""; dirty = true; applyBg(); statusLine();
+};
+$("#bgClear").onclick = () => { DATA.bg.image = ""; bgPreview = null; dirty = true; applyBg(); statusLine(); };
+$("#bgOp").oninput = () => { DATA.bg.opacity = $("#bgOp").value / 100; dirty = true; applyBg(); statusLine(); };
+$("#bgGray").onchange = () => { DATA.bg.gray = $("#bgGray").checked; dirty = true; applyBg(); statusLine(); };
+
+/* ============ キャラ名・色・編集モード ============ */
+$("#charName").value = charName();
+$("#charName").oninput = () => {
+  const n = $("#charName").value.trim() || "キャラ名";
+  $("#nameTxt").textContent = n; document.title = n + " コンボレシピ";
+  dirty = true; statusLine(); applyBg();
+};
+$("#editToggle").onclick = () => {
+  const on = document.body.classList.toggle("editing");
+  $("#editToggle").classList.toggle("on", on);
+  $("#editToggle").textContent = on ? "編集を終える" : "編集";
+  if (!on) closeForm();
+  rebuild();
+};
+window.addEventListener("beforeunload", e => { if (dirty){ e.preventDefault(); e.returnValue = ""; } });
+
+applyBg();
+loadLearned();
+buildFilters();
+rebuild();
+hydrate();
+</script>
+</body></html>

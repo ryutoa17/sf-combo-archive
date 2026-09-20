@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>カード デザイン案（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f6f3ee; --ink:#161616; --mute:#666; --pink:#ff3d7f; --blue:#2563eb; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.7; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; background:#161616; color:#fff; font-size:12.5px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 6px; background:#161616; color:#999; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#ff3d7f; }
+  #tabs b{ font-weight:900; margin-right:5px; }
+  .bg{ position:fixed; inset:0; z-index:0; pointer-events:none; background:url("../../画像/RASHID/topic-08152-1.jpg") center/cover no-repeat; opacity:.45; mix-blend-mode:multiply; }
+  .page{ position:relative; z-index:1; padding:60px 20px 80px; max-width:1180px; margin:0 auto; }
+  .sec{ display:flex; align-items:baseline; gap:12px; margin:26px 0 12px; }
+  .sec h2{ margin:0; font-size:30px; line-height:1; }
+  .sec h2 span{ font-family:"Noto Sans JP"; font-weight:900; font-size:13px; margin-left:8px; }
+  .sec .line{ flex:1; height:3px; background:var(--ink); border-radius:2px; }
+  .note{ font-size:12.5px; color:#444; margin:26px 0 0; background:rgba(255,255,255,.7); padding:10px 14px; border-radius:10px; }
+
+  /* ---------- 共通部品（現行 v3） ---------- */
+  .card{ position:relative; background:#fff; border:3px solid var(--ink); border-radius:18px; box-shadow:6px 6px 0 var(--ink); overflow:hidden; }
+  .chip{ display:inline-block; font-size:11px; font-weight:900; border:2px solid currentColor; border-radius:999px; padding:0 10px; line-height:1.7; }
+  .pill{ font:inherit; font-size:11.5px; font-weight:900; background:#fff; border:2px solid var(--ink); border-radius:999px; padding:0 10px; color:var(--mute); }
+  .pill.on{ background:#0f9d6a; color:#fff; }
+  /* ポータル */
+  .pgrid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:22px; margin-bottom:16px; }
+  .tgrid{ display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:16px; }
+  .pcard{ display:flex; flex-direction:column; border-radius:22px; box-shadow:8px 8px 0 var(--ink); }
+  .pcard .head{ position:relative; min-height:200px; padding:18px 20px 12px; }
+  .pcard .nm{ margin:0; font-size:54px; line-height:1; position:relative; }
+  .pcard .st{ position:relative; font-size:12px; color:var(--mute); display:flex; gap:12px; }
+  .pcard .st b{ color:var(--ink); }
+  .pcard .art{ position:absolute; inset:0; pointer-events:none; }
+  .pcard .art img{ position:absolute; right:-4%; top:-4%; height:110%; mix-blend-mode:multiply; opacity:.42; }
+  .pcard .band{ background:var(--c); border-top:3px solid var(--ink); padding:12px 14px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .pcard .band a{ display:block; text-align:center; text-decoration:none; font-weight:900; font-size:13px; padding:9px 4px; background:#fff; border:3px solid var(--ink); border-radius:10px; }
+  .tile{ display:flex; flex-direction:column; border-radius:16px; }
+  .tile .head{ position:relative; min-height:120px; padding:12px; }
+  .tile .nm{ margin:0; font-size:30px; line-height:1; white-space:nowrap; position:relative; }
+  .tile .ini{ position:absolute; right:-6px; bottom:-26px; font-size:120px; font-weight:900; line-height:1; color:var(--c); opacity:.14; }
+  .tile .band{ background:var(--c); border-top:3px solid var(--ink); padding:7px; display:flex; gap:4px; }
+  .tile .band a{ flex:1; text-align:center; text-decoration:none; font-weight:900; font-size:10.5px; padding:5px 2px; background:#fff; border:2px solid var(--ink); border-radius:8px; }
+  /* コンボ / 対策 */
+  .entry{ display:grid; grid-template-columns:minmax(0,400px) minmax(0,1fr); margin:0 0 22px; }
+  .clip{ background:#000; border-right:3px solid var(--ink); display:flex; flex-direction:column; }
+  .clip video{ display:block; width:100%; height:auto; }
+  .ctrl{ display:flex; gap:6px; align-items:center; padding:8px; background:#fff; border-top:3px solid var(--ink); margin-top:auto; }
+  .ctrl button{ font:inherit; font-size:11.5px; font-weight:900; background:#fff; border:2px solid var(--ink); border-radius:8px; padding:2px 10px; box-shadow:2px 2px 0 var(--ink); }
+  .ctrl .time{ margin-left:auto; font-size:11px; color:var(--mute); font-family:ui-monospace,monospace; }
+  .body{ display:flex; flex-direction:column; }
+  .chead{ padding:16px 22px 10px; }
+  .cbody{ padding:0 22px 16px; }
+  .tags{ display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-bottom:8px; }
+  .tags .sp{ flex:1; }
+  .recipe{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:20px; font-weight:700; margin:0; }
+  .recipe .p{ color:#999; font-weight:400; } .recipe .s{ color:#dc2626; }
+  .title{ margin:0; font-size:24px; font-weight:900; line-height:1.3; }
+  .stats{ display:flex; gap:22px; margin:10px 0 0; font-size:12px; color:var(--mute); }
+  .stats b{ color:var(--ink); font-family:ui-monospace,monospace; font-size:16px; }
+  .gauge{ display:inline-flex; gap:3px; vertical-align:middle; }
+  .gauge i{ width:12px; height:15px; border:2px solid var(--ink); border-radius:3px; background:#fff; display:block; }
+  .gauge i.on{ background:var(--c); }
+  .desc{ margin:10px 0 0; font-size:14.5px; }
+  .link{ margin:8px 0 0; font-size:13px; } .link a{ color:#0066ff; }
+  .meta{ margin-top:10px; font-size:11.5px; color:#888; }
+
+  /* ======== K1 カラーヘッダ: 見出し部分をキャラ色の帯にする ======== */
+  body.K1 .chead{ background:var(--c); color:#fff; border-bottom:3px solid var(--ink); padding-bottom:12px; }
+  body.K1 .chead .recipe, body.K1 .chead .title{ color:#fff; text-shadow:2px 2px 0 var(--ink); }
+  body.K1 .chead .recipe .p{ color:rgba(255,255,255,.7); } body.K1 .chead .recipe .s{ color:#ffe36e; }
+  body.K1 .chead .chip{ background:#fff; color:var(--ink) !important; border-color:var(--ink); }
+  body.K1 .cbody{ padding-top:12px; }
+  body.K1 .pcard .head{ background:var(--c); color:#fff; }
+  body.K1 .pcard .nm{ color:#fff; text-shadow:3px 3px 0 var(--ink); }
+  body.K1 .pcard .st{ color:rgba(255,255,255,.85); } body.K1 .pcard .st b{ color:#fff; }
+  body.K1 .pcard .band{ background:#fff; }
+  body.K1 .pcard .art img{ mix-blend-mode:multiply; opacity:.5; }
+  body.K1 .tile .head{ background:var(--c); color:#fff; } body.K1 .tile .nm{ text-shadow:2px 2px 0 var(--ink); } body.K1 .tile .ini{ color:#fff; opacity:.2; }
+  body.K1 .tile .band{ background:#fff; }
+
+  /* ======== K2 ティント: カード全体をキャラ色で淡く染め、左に太い帯 ======== */
+  body.K2 .card{ background:color-mix(in srgb,var(--c) 12%,#fff); }
+  body.K2 .entry .body{ border-left:10px solid var(--c); }
+  body.K2 .ctrl{ background:color-mix(in srgb,var(--c) 12%,#fff); }
+  body.K2 .pcard .head{ background:linear-gradient(160deg,color-mix(in srgb,var(--c) 22%,#fff),color-mix(in srgb,var(--c) 6%,#fff)); }
+  body.K2 .tile .head{ background:color-mix(in srgb,var(--c) 14%,#fff); }
+  body.K2 .stats b, body.K2 .title, body.K2 .recipe{ color:var(--ink); }
+
+  /* ======== K3 ダーク反転: カードを暗色にして動画と一体化、影はキャラ色 ======== */
+  body.K3 .card{ background:#1b1c22; color:#f4f1ea; border-color:#f4f1ea; box-shadow:6px 6px 0 var(--c); }
+  body.K3 .clip{ border-right-color:#f4f1ea; }
+  body.K3 .ctrl{ background:#1b1c22; border-top-color:#f4f1ea; }
+  body.K3 .ctrl button{ background:#1b1c22; color:#f4f1ea; border-color:#f4f1ea; box-shadow:2px 2px 0 #f4f1ea; }
+  body.K3 .ctrl .time{ color:#a9a49a; }
+  body.K3 .recipe, body.K3 .title{ color:#fff; } body.K3 .recipe .s{ color:#ff7b6b; } body.K3 .recipe .p{ color:#666; }
+  body.K3 .stats{ color:#a9a49a; } body.K3 .stats b{ color:#fff; }
+  body.K3 .gauge i{ border-color:#f4f1ea; background:transparent; } body.K3 .gauge i.on{ background:var(--c); }
+  body.K3 .desc{ color:#d9d5ca; } body.K3 .meta{ color:#7c7870; } body.K3 .link a{ color:#54c6ea; }
+  body.K3 .pill{ background:#1b1c22; color:#a9a49a; border-color:#f4f1ea; } body.K3 .pill.on{ background:#0f9d6a; color:#fff; }
+  body.K3 .pcard{ box-shadow:8px 8px 0 var(--c); }
+  body.K3 .pcard .nm, body.K3 .tile .nm{ color:#fff; }
+  body.K3 .pcard .st{ color:#a9a49a; } body.K3 .pcard .st b{ color:#fff; }
+  body.K3 .pcard .art img{ mix-blend-mode:screen; opacity:.55; }
+  body.K3 .pcard .band, body.K3 .tile .band{ border-top-color:#f4f1ea; }
+  body.K3 .pcard .band a, body.K3 .tile .band a{ background:#1b1c22; color:#fff; border-color:#f4f1ea; }
+  body.K3 .tile .ini{ color:var(--c); opacity:.3; }
+
+  /* ======== K4 パターン: 白カードに斜めストライプの角と大きな透かし ======== */
+  body.K4 .card::before{ content:""; position:absolute; right:-40px; top:-40px; width:150px; height:150px; transform:rotate(45deg); background:repeating-linear-gradient(0deg,var(--c) 0 6px,transparent 6px 12px); opacity:.55; pointer-events:none; z-index:1; }
+  body.K4 .entry::after{ content:attr(data-wm); position:absolute; right:18px; bottom:-18px; font-family:"Bebas Neue"; font-size:96px; line-height:1; color:var(--c); opacity:.12; pointer-events:none; letter-spacing:.05em; }
+  body.K4 .chead{ border-bottom:3px dashed color-mix(in srgb,var(--c) 45%,#fff); padding-bottom:10px; }
+  body.K4 .cbody{ padding-top:10px; }
+  body.K4 .pcard::before, body.K4 .tile::before{ z-index:0; }
+  body.K4 .tile .ini{ opacity:.18; }
+
+  /* ======== K5 ガラス: 半透明にして背景画像を透かす ======== */
+  body.K5 .card{ background:rgba(255,255,255,.72); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+  body.K5 .ctrl{ background:rgba(255,255,255,.72); }
+  body.K5 .pcard .band, body.K5 .tile .band{ background:color-mix(in srgb,var(--c) 85%,transparent); }
+  body.K5 .pcard .band a, body.K5 .tile .band a{ background:rgba(255,255,255,.85); }
+  body.K5 .pill, body.K5 .ctrl button{ background:rgba(255,255,255,.85); }
+  body.K5 .pill.on{ background:#0f9d6a; }
+</style>
+</head>
+<body class="K1">
+<div id="tabs">
+  <button data-v="K1" aria-pressed="true"><b>K1</b>カラーヘッダ（見出し部をキャラ色の帯に）</button>
+  <button data-v="K2"><b>K2</b>ティント（キャラ色で淡く染める）</button>
+  <button data-v="K3"><b>K3</b>ダーク反転（暗色カード + キャラ色の影）</button>
+  <button data-v="K4"><b>K4</b>パターン（ストライプの角 + 透かし）</button>
+  <button data-v="K5"><b>K5</b>ガラス（半透明で背景を透かす）</button>
+</div>
+<div class="bg"></div>
+
+<div class="page">
+  <div class="sec"><h2 class="disp" style="color:var(--pink)">PORTAL<span>ポータルのカード</span></h2><span class="line"></span></div>
+  <div class="pgrid">
+    <div class="card pcard" style="--c:#00c9a7">
+      <div class="head"><div class="art"><img src="../../画像/RASHID/images.jpg" alt=""></div><h3 class="nm disp">ラシード</h3><div class="st"><span>習得 <b>2</b></span><span>★ <b>1</b></span><span>更新 <b>09/19</b></span></div></div>
+      <div class="band"><a href="#">コンボ記録</a><a href="#">キャラ対策</a><a href="#">参考情報 2</a></div>
+    </div>
+    <div class="card pcard" style="--c:#ff4b4b">
+      <div class="head"><div class="art"><img src="../../画像/KEN/images (1).jpg" alt=""></div><h3 class="nm disp">ケン</h3><div class="st"><span>習得 <b>0</b></span><span>更新 <b>09/15</b></span></div></div>
+      <div class="band"><a href="#">コンボ記録</a><a href="#">キャラ対策</a><a href="#">参考情報 1</a></div>
+    </div>
+  </div>
+  <div class="tgrid">
+    <div class="card tile" style="--c:#3b82f6"><div class="head"><h3 class="nm disp">春麗</h3><div class="ini">春</div></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+    <div class="card tile" style="--c:#c026d3"><div class="head"><h3 class="nm disp">ジュリ</h3><div class="ini">ジ</div></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+    <div class="card tile" style="--c:#f59e0b"><div class="head"><h3 class="nm disp">ルーク</h3><div class="ini">ル</div></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+    <div class="card tile" style="--c:#84cc16"><div class="head"><h3 class="nm disp">キャミィ</h3><div class="ini">キ</div></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+    <div class="card tile" style="--c:#e11d48"><div class="head"><h3 class="nm disp">リュウ</h3><div class="ini">リ</div></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+    <div class="card tile" style="--c:#0ea5e9"><div class="head"><h3 class="nm disp">ガイル</h3><div class="ini">ガ</div></div><div class="band"><a href="#">コンボ</a><a href="#">対策</a><a href="#">参考</a></div></div>
+  </div>
+
+  <div class="sec"><h2 class="disp">ラシード <span class="disp" style="color:var(--pink);font-size:30px;margin:0">COMBO</span><span>コンボDBのカード</span></h2><span class="line"></span></div>
+  <article class="card entry" style="--c:#00c9a7" data-wm="COMBO">
+    <div class="clip"><video preload="metadata" muted playsinline src="../../COMBO_DB/RASHID/clips/壁インパクト1.mp4"></video><div class="ctrl"><button>再生</button><button>◀</button><button>▶</button><button>頭出し</button><span class="time">0.00s</span></div></div>
+    <div class="body">
+      <div class="chead"><div class="tags"><span class="chip" style="color:#b45309">壁インパクト</span><span class="sp"></span><span class="pill">☆</span><span class="pill on">✓ 習得済み</span></div><div class="recipe">5MP <span class="p">&gt;</span> 5MK <span class="p">&gt;</span> 弱ミキサー <span class="p">&gt;</span> 大ミキサー</div></div>
+      <div class="cbody"><div class="stats"><span>ダメージ <b>2112</b></span><span>Dゲージ <span class="gauge"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i></span></span><span>SA <b>—</b></span></div><p class="desc">5MK消費で+5Fシミー不可</p><div class="meta">端 / 壁インパクト1</div></div>
+    </div>
+  </article>
+
+  <div class="sec"><h2 class="disp">ケン <span class="disp" style="color:var(--blue);font-size:30px;margin:0">VS</span><span>キャラ対策DBのカード</span></h2><span class="line"></span></div>
+  <article class="card entry" style="--c:#ff4b4b" data-wm="VS">
+    <div class="clip"><video preload="metadata" muted playsinline src="../../COMBO_DB/RASHID/clips/中スパイク〆_中段起き攻め.mp4"></video><div class="ctrl"><button>再生</button><button>◀</button><button>▶</button><button>頭出し</button><span class="time">0.00s</span></div></div>
+    <div class="body">
+      <div class="chead"><div class="tags"><span class="chip" style="color:var(--c)">ラシード</span></div><h3 class="title">迅雷脚の派生対策</h3></div>
+      <div class="cbody"><p class="desc">中段派生はしゃがみガードから立ちに切替。下段派生は -6F なので確定反撃。</p><div class="link"><a href="#">https://youtu.be/xxxx</a></div><div class="meta">迅雷脚対策 / 更新 2026-09-20</div></div>
+    </div>
+  </article>
+
+  <p class="note" id="note"></p>
+</div>
+
+<script>
+const NOTES = {
+  K1: "カードの見出し部分（タグ + レシピ / タイトル、ポータルは名前）をキャラ色の帯にし、本文は白のまま。白の面積が減り、キャラごとに色が変わる。ポータルは帯とボタン列の色が入れ替わる。",
+  K2: "カード全体をキャラ色で 12% ほど淡く染め、本文の左に太いキャラ色の帯。白ではなくなるが落ち着いている。ポータルの大カードはグラデーション。",
+  K3: "カードを暗色にし、動画の黒と一体化させる。影をキャラ色にしてポップさを残す。背景画像が明るいので、暗いカードが浮き上がって見える。文字は白。",
+  K4: "白カードのまま、右上に斜めストライプの角、右下に大きな透かし文字（COMBO / VS）。見出しと本文の間はキャラ色の点線。装飾で寂しさを埋める案。",
+  K5: "カードを半透明（白 72% + ぼかし）にして背景画像を透かす。背景を入れた意味が最も出る。文字の可読性はぼかしで確保。"
+};
+function show(v){
+  document.body.className = v;
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+  document.getElementById("note").textContent = NOTES[v];
+  location.hash = v;
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => show(b.dataset.v));
+show(/^#K[1-5]$/.test(location.hash) ? location.hash.slice(1) : "K1");
+</script>
+</body></html>

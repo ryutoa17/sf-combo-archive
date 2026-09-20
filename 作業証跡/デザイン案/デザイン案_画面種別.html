@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>画面種別の見出し デザイン案（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:#f6f3ee; color:#161616; font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.7; }
+  a{ color:inherit; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+  #tabs{ position:fixed; top:0; left:0; right:0; z-index:100; display:flex; background:#161616; color:#fff; font-size:12.5px; }
+  #tabs button{ font:inherit; flex:1; padding:10px 6px; background:#161616; color:#999; border:0; border-bottom:3px solid transparent; cursor:pointer; }
+  #tabs button[aria-pressed="true"]{ color:#fff; border-color:#ff3d7f; }
+  #tabs b{ font-weight:900; margin-right:5px; }
+  .variant{ display:none; padding-top:44px; }
+  .variant.on{ display:block; }
+  .note{ font-size:12.5px; color:#666; max-width:1240px; margin:16px auto 30px; padding:0 20px; }
+
+  /* 2画面を並べる枠（モック専用） */
+  .pair{ display:grid; grid-template-columns:1fr 1fr; gap:0; max-width:1280px; margin:0 auto; }
+  .screen{ padding:28px 22px 30px; border-right:2px dashed #bbb; min-height:560px; }
+  .screen:last-child{ border-right:0; }
+  .screen .lbl{ font-size:11px; color:#999; margin-bottom:10px; }
+
+  /* M1 の共通部品 */
+  .back{ display:inline-block; font-size:12px; font-weight:900; border:2px solid #161616; border-radius:999px; padding:1px 12px; background:#fff; text-decoration:none; box-shadow:3px 3px 0 #161616; }
+  .btn{ font:inherit; font-size:13px; font-weight:900; color:#161616; background:#fff; border:3px solid #161616; border-radius:12px; padding:8px 16px; cursor:pointer; box-shadow:4px 4px 0 #161616; }
+  .summary{ background:#fff; border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; padding:14px 18px; margin:16px 0; position:relative; overflow:hidden; font-size:14px; }
+  .summary::before{ content:""; position:absolute; left:0; top:0; bottom:0; width:10px; background:var(--c); }
+  .summary b{ display:block; font-size:11px; color:#666; }
+  .chips{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:14px 0; font-size:13px; }
+  .chips .k{ font-weight:900; margin-right:4px; }
+  .chip{ font:inherit; font-size:13px; font-weight:700; background:#fff; border:2px solid #161616; border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 #161616; }
+  .chip.on{ background:#161616; color:#fff; }
+  .entry{ background:#fff; border:3px solid #161616; border-radius:18px; box-shadow:6px 6px 0 #161616; display:grid; grid-template-columns:200px 1fr; overflow:hidden; }
+  .entry .clip{ background:#000; border-right:3px solid #161616; min-height:120px; display:flex; align-items:center; justify-content:center; color:#888; font-size:12px; }
+  .entry .body{ padding:12px 16px; }
+  .entry .tag{ display:inline-block; font-size:11px; font-weight:900; border:2px solid var(--c); color:var(--c); border-radius:999px; padding:0 10px; }
+  .entry .title{ margin:4px 0 4px; font-size:18px; font-weight:900; }
+  .entry p{ margin:0; font-size:13px; }
+  .recipe{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:16px; margin:4px 0; }
+  .recipe .s{ color:#e2604f; } .recipe .r{ color:#0ea5e9; }
+
+  /* 種別ごとの色: コンボ = 青、対策 = ピンク */
+  .combo{ --k:#2563eb; --kname:"COMBO DB"; }
+  .vs{ --k:#ff3d7f; }
+
+  /* ========= D1 バナー帯 ========= */
+  #D1 .banner{ margin:0 -22px 18px; padding:10px 22px; background:var(--k); color:#fff; border-top:3px solid #161616; border-bottom:3px solid #161616; display:flex; align-items:baseline; gap:14px; }
+  #D1 .banner .big{ font-size:44px; line-height:1; text-shadow:3px 3px 0 #161616; }
+  #D1 .banner .ja{ font-size:14px; font-weight:900; letter-spacing:.2em; }
+  #D1 .banner .sp{ flex:1; }
+  #D1 .banner .back{ color:#161616; }
+  #D1 h1{ margin:0; font-size:72px; line-height:.9; }
+  #D1 .row{ display:flex; align-items:flex-end; gap:16px; }
+  #D1 .row .sp{ flex:1; }
+
+  /* ========= D2 種別が最大の見出し（2段） ========= */
+  #D2 .kind{ display:flex; align-items:center; gap:14px; margin:12px 0 14px; }
+  #D2 .kind .ja{ font-size:50px; font-weight:900; line-height:1; letter-spacing:-.02em; color:var(--k); text-shadow:3px 3px 0 #161616; -webkit-text-stroke:1px #161616; }
+  #D2 .kind .en{ font-size:16px; letter-spacing:.3em; color:#161616; }
+  #D2 h1{ margin:0; font-size:64px; line-height:.95; color:#161616; }
+  #D2 h1 small{ display:block; font-family:"Noto Sans JP"; font-size:12px; font-weight:900; letter-spacing:.2em; color:#666; margin-bottom:6px; }
+  #D2 .stripe{ height:10px; background:repeating-linear-gradient(-45deg,var(--k) 0 12px,#161616 12px 16px); border:3px solid #161616; border-radius:999px; margin:14px 0 6px; }
+
+  /* ========= D3 スタンプ + 名前 ========= */
+  #D3 .head{ position:relative; padding:18px 0 6px; }
+  #D3 .stamp{ position:absolute; right:0; top:0; transform:rotate(-8deg); border:4px solid var(--k); color:var(--k); border-radius:12px; padding:2px 14px; font-size:34px; line-height:1.1; text-align:center; background:rgba(255,255,255,.7); box-shadow:4px 4px 0 #161616; }
+  #D3 .stamp small{ display:block; font-family:"Noto Sans JP"; font-size:11px; font-weight:900; letter-spacing:.15em; }
+  #D3 .kind{ font-size:13px; font-weight:900; letter-spacing:.3em; color:var(--k); }
+  #D3 h1{ margin:0; font-size:80px; line-height:.9; }
+  #D3 .under{ display:inline-block; margin-top:8px; font-size:13px; font-weight:900; background:var(--k); color:#fff; border:2px solid #161616; border-radius:999px; padding:1px 14px; box-shadow:3px 3px 0 #161616; }
+
+  /* ========= D4 タブ型スイッチ ========= */
+  #D4 .tabsw{ display:flex; gap:0; border:3px solid #161616; border-radius:14px; overflow:hidden; box-shadow:5px 5px 0 #161616; background:#fff; margin:10px 0 18px; width:max-content; }
+  #D4 .tabsw span{ padding:8px 22px; font-size:22px; font-weight:900; letter-spacing:.02em; display:flex; align-items:center; gap:10px; }
+  #D4 .tabsw span + span{ border-left:3px solid #161616; }
+  #D4 .tabsw .on{ background:var(--k); color:#fff; text-shadow:2px 2px 0 #161616; }
+  #D4 .tabsw .off{ color:#999; }
+  #D4 .tabsw .en{ font-family:"Bebas Neue"; font-size:16px; letter-spacing:.15em; opacity:.8; }
+  #D4 h1{ margin:0; font-size:72px; line-height:.9; }
+  #D4 .row{ display:flex; align-items:flex-end; gap:16px; }
+  #D4 .row .sp{ flex:1; }
+</style>
+</head>
+<body>
+
+<div id="tabs">
+  <button data-v="D1" aria-pressed="true"><b>D1</b>バナー帯（種別色の帯に大文字）</button>
+  <button data-v="D2" aria-pressed="false"><b>D2</b>種別が最大の見出し（2段）</button>
+  <button data-v="D3" aria-pressed="false"><b>D3</b>スタンプ + 名前</button>
+  <button data-v="D4" aria-pressed="false"><b>D4</b>タブ型スイッチ</button>
+</div>
+
+<!-- ============ D1 ============ -->
+<section id="D1" class="variant on">
+  <div class="pair">
+    <div class="screen combo" style="--c:#00c9a7">
+      <div class="lbl">COMBO_DB/RASHID/combo.html</div>
+      <div class="banner"><span class="big disp">COMBO DB</span><span class="ja">コンボDB</span><span class="sp"></span><a class="back" href="#">← 一覧</a></div>
+      <div class="row"><h1 class="disp">ラシード</h1><span class="sp"></span><button class="btn">編集</button></div>
+      <div class="chips"><span class="k">位置</span><span class="chip on">すべて</span><span class="chip">中央</span><span class="chip">端</span></div>
+      <div class="entry"><div class="clip">動画</div><div class="body"><span class="tag">セットプレイ</span><div class="recipe">中スパイク &gt; 2LP &gt; 5HP</div><p>投げ抜けは 5MP &gt; 5HP &gt; 214MK で処す</p></div></div>
+    </div>
+    <div class="screen vs" style="--c:#ff4b4b">
+      <div class="lbl">VS_DB/ケン/matchup.html</div>
+      <div class="banner"><span class="big disp">VS DB</span><span class="ja">VSキャラ対策DB</span><span class="sp"></span><a class="back" href="#">← 一覧</a></div>
+      <div class="row"><h1 class="disp">ケン</h1><span class="sp"></span><button class="btn">編集</button></div>
+      <div class="summary"><b>特徴と立ち回り方針</b>ケンは通常技が長く、迅雷脚と波動拳が強いため立ち回りに注意。</div>
+      <div class="chips"><span class="k">キャラ</span><span class="chip on">すべて</span><span class="chip">全キャラ共通</span><span class="chip">ラシード</span></div>
+      <div class="entry"><div class="clip">動画</div><div class="body"><span class="tag">全キャラ共通</span><div class="title">迅雷脚の派生対策</div><p>中段派生はしゃがみガードから立ちに切替。</p></div></div>
+    </div>
+  </div>
+  <p class="note">画面の最上部に種別色（コンボ = 青、対策 = ピンク）の帯を敷き、英語の大文字（Bebas 44px）と日本語を並べる。帯の色と文字で、開いた瞬間にどちらか分かる。キャラ名は帯の下に大きく。</p>
+</section>
+
+<!-- ============ D2 ============ -->
+<section id="D2" class="variant">
+  <div class="pair">
+    <div class="screen combo" style="--c:#00c9a7">
+      <div class="lbl">COMBO_DB/RASHID/combo.html</div>
+      <a class="back" href="#">← 一覧</a>
+      <div class="kind"><span class="ja">コンボDB</span><span class="en disp">COMBO DATABASE</span></div>
+      <h1 class="disp"><small>CHARACTER</small>ラシード</h1>
+      <div class="stripe"></div>
+      <div class="chips"><span class="k">位置</span><span class="chip on">すべて</span><span class="chip">中央</span><span class="chip">端</span></div>
+      <div class="entry"><div class="clip">動画</div><div class="body"><span class="tag">セットプレイ</span><div class="recipe">中スパイク &gt; 2LP &gt; 5HP</div><p>投げ抜けは 5MP &gt; 5HP &gt; 214MK で処す</p></div></div>
+    </div>
+    <div class="screen vs" style="--c:#ff4b4b">
+      <div class="lbl">VS_DB/ケン/matchup.html</div>
+      <a class="back" href="#">← 一覧</a>
+      <div class="kind"><span class="ja">VSキャラ対策DB</span><span class="en disp">MATCHUP DATABASE</span></div>
+      <h1 class="disp"><small>OPPONENT</small>ケン</h1>
+      <div class="stripe"></div>
+      <div class="summary"><b>特徴と立ち回り方針</b>ケンは通常技が長く、迅雷脚と波動拳が強いため立ち回りに注意。</div>
+      <div class="chips"><span class="k">キャラ</span><span class="chip on">すべて</span><span class="chip">全キャラ共通</span><span class="chip">ラシード</span></div>
+      <div class="entry"><div class="clip">動画</div><div class="body"><span class="tag">全キャラ共通</span><div class="title">迅雷脚の派生対策</div><p>中段派生はしゃがみガードから立ちに切替。</p></div></div>
+    </div>
+  </div>
+  <p class="note">種別名（日本語 50px、種別色に黒縁）をページで最も大きい文字にし、その下にキャラ名。キャラ名の上の小文字（CHARACTER / OPPONENT）で立場も示す。種別色の斜めストライプで区切る。</p>
+</section>
+
+<!-- ============ D3 ============ -->
+<section id="D3" class="variant">
+  <div class="pair">
+    <div class="screen combo" style="--c:#00c9a7">
+      <div class="lbl">COMBO_DB/RASHID/combo.html</div>
+      <a class="back" href="#">← 一覧</a>
+      <div class="head">
+        <div class="stamp disp">COMBO<small>コンボDB</small></div>
+        <div class="kind">COMBO / コンボ記録</div>
+        <h1 class="disp">ラシード</h1>
+        <span class="under">コンボDB</span>
+      </div>
+      <div class="chips"><span class="k">位置</span><span class="chip on">すべて</span><span class="chip">中央</span><span class="chip">端</span></div>
+      <div class="entry"><div class="clip">動画</div><div class="body"><span class="tag">セットプレイ</span><div class="recipe">中スパイク &gt; 2LP &gt; 5HP</div><p>投げ抜けは 5MP &gt; 5HP &gt; 214MK で処す</p></div></div>
+    </div>
+    <div class="screen vs" style="--c:#ff4b4b">
+      <div class="lbl">VS_DB/ケン/matchup.html</div>
+      <a class="back" href="#">← 一覧</a>
+      <div class="head">
+        <div class="stamp disp">VS<small>キャラ対策DB</small></div>
+        <div class="kind">VS / キャラ対策</div>
+        <h1 class="disp">ケン</h1>
+        <span class="under">VSキャラ対策DB</span>
+      </div>
+      <div class="summary"><b>特徴と立ち回り方針</b>ケンは通常技が長く、迅雷脚と波動拳が強いため立ち回りに注意。</div>
+      <div class="chips"><span class="k">キャラ</span><span class="chip on">すべて</span><span class="chip">全キャラ共通</span><span class="chip">ラシード</span></div>
+      <div class="entry"><div class="clip">動画</div><div class="body"><span class="tag">全キャラ共通</span><div class="title">迅雷脚の派生対策</div><p>中段派生はしゃがみガードから立ちに切替。</p></div></div>
+    </div>
+  </div>
+  <p class="note">右上に傾いたスタンプ（COMBO / VS）を押し、キャラ名の下に種別色のピルで日本語名。キャラ名を主役にしたまま種別を目立たせる。</p>
+</section>
+
+<!-- ============ D4 ============ -->
+<section id="D4" class="variant">
+  <div class="pair">
+    <div class="screen combo" style="--c:#00c9a7">
+      <div class="lbl">COMBO_DB/RASHID/combo.html</div>
+      <a class="back" href="#">← 一覧</a>
+      <div class="tabsw"><span class="on"><span class="en">COMBO</span>コンボDB</span><span class="off"><span class="en">VS</span>キャラ対策DB</span></div>
+      <div class="row"><h1 class="disp">ラシード</h1><span class="sp"></span><button class="btn">編集</button></div>
+      <div class="chips"><span class="k">位置</span><span class="chip on">すべて</span><span class="chip">中央</span><span class="chip">端</span></div>
+      <div class="entry"><div class="clip">動画</div><div class="body"><span class="tag">セットプレイ</span><div class="recipe">中スパイク &gt; 2LP &gt; 5HP</div><p>投げ抜けは 5MP &gt; 5HP &gt; 214MK で処す</p></div></div>
+    </div>
+    <div class="screen vs" style="--c:#ff4b4b">
+      <div class="lbl">VS_DB/ケン/matchup.html</div>
+      <a class="back" href="#">← 一覧</a>
+      <div class="tabsw"><span class="off"><span class="en">COMBO</span>コンボDB</span><span class="on"><span class="en">VS</span>キャラ対策DB</span></div>
+      <div class="row"><h1 class="disp">ケン</h1><span class="sp"></span><button class="btn">編集</button></div>
+      <div class="summary"><b>特徴と立ち回り方針</b>ケンは通常技が長く、迅雷脚と波動拳が強いため立ち回りに注意。</div>
+      <div class="chips"><span class="k">キャラ</span><span class="chip on">すべて</span><span class="chip">全キャラ共通</span><span class="chip">ラシード</span></div>
+      <div class="entry"><div class="clip">動画</div><div class="body"><span class="tag">全キャラ共通</span><div class="title">迅雷脚の派生対策</div><p>中段派生はしゃがみガードから立ちに切替。</p></div></div>
+    </div>
+  </div>
+  <p class="note">「コンボDB | キャラ対策DB」の2枚タブを上部に置き、今いる方を種別色で塗る。もう一方は灰色で表示のみ（同じフォルダ名の相手ツールがあればそこへのリンクにできる）。切替 UI の形なので「2種類ある」ことも同時に伝わる。</p>
+</section>
+
+<script>
+function showVariant(id){
+  document.querySelectorAll("#tabs button").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.v === id)));
+  document.querySelectorAll(".variant").forEach(v => v.classList.toggle("on", v.id === id));
+  location.hash = id; window.scrollTo(0, 0);
+}
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => showVariant(b.dataset.v));
+if (/^#D[1-4]$/.test(location.hash)) showVariant(location.hash.slice(1));
+</script>
+</body></html>

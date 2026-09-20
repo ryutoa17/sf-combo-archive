@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>背景画像の切替 デザイン案（モック）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --paper:#f6f3ee; --ink:#161616; --mute:#666; --kind:#2563eb; --bgop:.45; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--paper); color:var(--ink); font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",system-ui,sans-serif; font-size:15px; line-height:1.7; }
+  .disp{ font-family:"Bebas Neue","Noto Sans JP",sans-serif; letter-spacing:.02em; }
+
+  #panel{ position:fixed; top:0; left:0; right:0; z-index:100; background:#161616; color:#fff; font-size:12.5px; display:flex; gap:14px; align-items:center; padding:8px 14px; flex-wrap:wrap; }
+  #panel b{ font-weight:900; }
+  #panel .g{ display:flex; gap:4px; align-items:center; }
+  #panel button{ font:inherit; font-size:12px; background:#333; color:#ccc; border:0; border-radius:6px; padding:4px 10px; cursor:pointer; }
+  #panel button[aria-pressed="true"]{ background:#ff3d7f; color:#fff; }
+  #panel input[type=range]{ width:110px; }
+  #panel label{ display:flex; gap:6px; align-items:center; }
+  #panel .pos{ margin-left:auto; color:#aaa; }
+
+  /* ---- 背景（本体に入れる部分）---- */
+  #bg{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  #bg .layer{ position:absolute; left:0; right:0; background-size:cover; background-position:center; background-repeat:no-repeat; opacity:var(--bgop); mix-blend-mode:multiply; }
+  body.gray #bg .layer{ filter:grayscale(1); }
+  /* S1 固定クロスフェード: 全レイヤーを画面いっぱいに重ね、opacity を JS で切替 */
+  body.S1 #bg .layer{ inset:0; transition:opacity .6s; }
+  /* S2 縦に並べてスクロール / S3 パララックス: レイヤーを縦に積み、コンテナを動かす */
+  body.S2 #bg .layer, body.S3 #bg .layer, body.S4 #bg .layer{ height:100vh; }
+  /* S4 帯: 各画像の上下を紙色に溶かす */
+  body.S4 #bg .layer{ height:70vh; -webkit-mask-image:linear-gradient(to bottom,transparent,#000 18%,#000 82%,transparent); mask-image:linear-gradient(to bottom,transparent,#000 18%,#000 82%,transparent); }
+
+  .page{ position:relative; z-index:1; padding-top:48px; }
+  .banner{ background:var(--kind); color:#fff; border-bottom:3px solid var(--ink); }
+  .banner .in{ max-width:1180px; margin:0 auto; padding:10px 20px; display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; }
+  .banner .big{ font-size:44px; line-height:1; text-shadow:3px 3px 0 var(--ink); }
+  .banner .ja{ font-size:14px; font-weight:900; letter-spacing:.2em; }
+  .banner .sp{ flex:1; }
+  .pill{ display:inline-block; font-size:12px; font-weight:900; color:var(--ink); border:2px solid var(--ink); border-radius:999px; padding:1px 12px; background:#fff; text-decoration:none; box-shadow:3px 3px 0 var(--ink); }
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 20px 90px; }
+  header{ padding:22px 0 14px; display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; }
+  header .sp{ flex:1; }
+  .name{ margin:0; font-size:clamp(48px,9vw,80px); line-height:.9; }
+  .btn{ font:inherit; font-size:13px; font-weight:900; color:var(--ink); background:#fff; border:3px solid var(--ink); border-radius:12px; padding:8px 16px; cursor:pointer; box-shadow:4px 4px 0 var(--ink); }
+  .filters{ position:sticky; top:48px; z-index:20; background:rgba(246,243,238,.88); backdrop-filter:blur(8px); padding:10px 0 6px; }
+  .fgroup{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin:4px 0; font-size:13px; }
+  .fgroup > span{ font-weight:900; margin-right:4px; min-width:3.2em; }
+  .chip{ font:inherit; font-size:13px; font-weight:700; color:var(--ink); background:#fff; border:2px solid var(--ink); border-radius:999px; padding:2px 12px; box-shadow:3px 3px 0 var(--ink); }
+  .chip.on{ background:var(--ink); color:#fff; }
+  .count{ color:var(--mute); font-size:12px; margin:8px 0 16px; }
+  .entry{ background:#fff; border:3px solid var(--ink); border-radius:18px; box-shadow:6px 6px 0 var(--ink); display:grid; grid-template-columns:minmax(0,400px) minmax(0,1fr); margin:0 0 22px; overflow:hidden; }
+  .clip{ background:#000; border-right:3px solid var(--ink); display:flex; flex-direction:column; }
+  .clip video{ display:block; width:100%; height:auto; }
+  .controls{ display:flex; gap:6px; align-items:center; padding:8px; background:#fff; border-top:3px solid var(--ink); margin-top:auto; }
+  .controls button{ font:inherit; font-size:11.5px; font-weight:900; background:#fff; border:2px solid var(--ink); border-radius:8px; padding:2px 10px; box-shadow:2px 2px 0 var(--ink); }
+  .controls .time{ margin-left:auto; font-size:11px; color:var(--mute); font-family:ui-monospace,monospace; }
+  .body{ padding:18px 22px 16px; }
+  .tagchip{ display:inline-block; font-size:11px; font-weight:900; border:2px solid currentColor; border-radius:999px; padding:0 10px; line-height:1.7; margin-bottom:8px; }
+  .recipe{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:20px; font-weight:700; margin:0 0 12px; }
+  .recipe .p{ color:#999; font-weight:400; }
+  .body p{ margin:0; font-size:14.5px; white-space:pre-wrap; }
+  .meta{ margin-top:12px; font-size:11.5px; color:#888; }
+  .note{ font-size:12.5px; color:var(--mute); margin-top:24px; background:rgba(246,243,238,.85); padding:10px 14px; border-radius:10px; }
+</style>
+</head>
+<body class="S1">
+
+<div id="panel">
+  <b>切替方式</b>
+  <div class="g" id="modes">
+    <button data-m="S1" aria-pressed="true">S1 固定・スクロールでフェード</button>
+    <button data-m="S2">S2 縦に並べて流す</button>
+    <button data-m="S3">S3 パララックス</button>
+    <button data-m="S4">S4 帯で区切る</button>
+    <button data-m="S5">S5 固定・時間でフェード</button>
+  </div>
+  <label>濃さ <input type="range" id="op" min="10" max="70" value="45"> <span id="opv">45%</span></label>
+  <label><input type="checkbox" id="gray"> グレースケール</label>
+  <span class="pos" id="pos"></span>
+</div>
+
+<div id="bg"></div>
+
+<div class="page">
+  <div class="banner"><div class="in"><span class="big disp">COMBO DB</span><span class="ja">コンボDB</span><span class="sp"></span><a class="pill" href="#">← 一覧</a></div></div>
+  <div class="wrap">
+    <header><h1 class="name disp">ラシード</h1><span class="sp"></span><button class="btn">編集</button></header>
+    <div class="filters">
+      <div class="fgroup"><span>位置</span><span class="chip on">すべて</span><span class="chip">中央</span><span class="chip">端</span></div>
+      <div class="fgroup"><span>タグ</span><span class="chip on">すべて</span><span class="chip">コンボ</span><span class="chip">パニカン</span><span class="chip">壁インパクト</span><span class="chip">セットプレイ</span></div>
+    </div>
+    <p class="count">10 / 10 件</p>
+    <div id="list"></div>
+    <p class="note" id="note"></p>
+  </div>
+</div>
+
+<script>
+/* 背景に使う画像の一覧（順番に使う。数は自由）*/
+const IMAGES = [
+  "../../画像/RASHID/topic-08152-1.jpg",
+  "../../画像/RASHID/y_64a3cd87d8348.jpg",
+  "../../画像/RASHID/topic-08152-1.jpg"   /* デモ用: 3枚目は1枚目を左右反転して使う */
+];
+const FLIP = [false, false, true];
+const SEG = 1400;      /* S1: この px ごとに次の画像へ */
+const NOTES = {
+  S1: "画像は画面に固定したまま、スクロール量が一定（1400px）進むごとに次の画像へクロスフェード。途切れは起きず、画像は常に画面いっぱい。最後まで行くと1枚目に戻る。",
+  S2: "画像を1画面分ずつ縦に並べ、本文と一緒にスクロールさせる。ページの長さに合わせて画像を繰り返すので途切れない。紙をめくる感じ。",
+  S3: "S2 と同じ縦並びだが、背景は本文の半分の速さで動く（パララックス）。奥行きが出る。画像の枚数は S2 の半分で足りる。",
+  S4: "画像を高さ 70vh の帯として一定間隔で置き、上下を紙色に溶かす。帯と帯の間は紙色。本文と一緒にスクロール。",
+  S5: "画像は固定したまま、スクロールとは無関係に 8 秒ごとにクロスフェードで次の画像へ。読んでいる最中に背景がゆっくり変わる。"
+};
+
+const CLIPS = ["壁インパクト1","壁インパクト2","中スパイク〆_+5F_シミー不可","中スパイク〆_+5F_シミー可能","中スパイク〆_+6F_打撃重ね","中スパイク〆_+5F_KK派生で無敵回避","中スパイク〆_中段起き攻め","中スパイク〆_インパクト重ね","中スパイク_汚インパクト","中足始動_+5_シミー不可"];
+const RECIPES = ["5MP > 5MK > 弱ミキサー > 大ミキサー","5MK > 弱ミキサー > 6MP > 弱サイクロン上派生","中スパイク > 5MK > 前ステ","中スパイク > 2LP > 5HP","中スパイク > 2LP > KK","中スパイク > 2LK > KK","中スパイク > 前ステ > DR > 6HP","中スパイク > 2MK > DI","中スパイク > 2LK > DI","中足 > CDR > 5MK > 中PTC > 大サイクロン上派生 > 弱スカイハイ > 前ステ"];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]));
+document.getElementById("list").innerHTML = CLIPS.map((f, i) =>
+  '<article class="entry"><div class="clip"><video preload="metadata" muted playsinline src="' + encodeURI("../../COMBO_DB/RASHID/clips/" + f + ".mp4") + '"></video><div class="controls"><button>再生</button><button>◀</button><button>▶</button><button>頭出し</button><span class="time">0.00s</span></div></div>' +
+  '<div class="body"><span class="tagchip" style="color:#0f9d6a">セットプレイ</span><div class="recipe">' + esc(RECIPES[i]).replace(/&gt;/g, '<span class="p">&gt;</span>') + '</div><p>サンプル本文。スクロールして背景の切り替わりを確認する。</p><div class="meta">端 / ' + esc(f) + '</div></div></article>').join("");
+
+/* ---- 背景の構築 ---- */
+const bg = document.getElementById("bg");
+let mode = "S1", timer = null;
+function layerStyle(i){ return 'background-image:url("' + encodeURI(IMAGES[i % IMAGES.length]) + '");' + (FLIP[i % IMAGES.length] ? "transform:scaleX(-1);" : ""); }
+function build(){
+  bg.innerHTML = ""; clearInterval(timer); timer = null;
+  const vh = window.innerHeight, docH = document.documentElement.scrollHeight;
+  if (mode === "S1" || mode === "S5"){
+    IMAGES.forEach((_, i) => { const d = document.createElement("div"); d.className = "layer"; d.style.cssText = layerStyle(i) + "opacity:0"; bg.appendChild(d); });
+    bg.style.height = ""; bg.style.transform = "";
+    if (mode === "S5"){ let k = 0; showOnly(0); timer = setInterval(() => { k = (k + 1) % IMAGES.length; showOnly(k); }, 8000); }
+  } else if (mode === "S2" || mode === "S3"){
+    const speed = mode === "S3" ? .5 : 1;
+    const n = Math.ceil(docH * speed / vh) + 1;
+    for (let i = 0; i < n; i++){ const d = document.createElement("div"); d.className = "layer"; d.style.cssText = layerStyle(i) + "top:" + (i * vh) + "px"; bg.appendChild(d); }
+  } else if (mode === "S4"){
+    const band = vh * .7, gap = vh * .5, step = band + gap;
+    const n = Math.ceil(docH / step) + 1;
+    for (let i = 0; i < n; i++){ const d = document.createElement("div"); d.className = "layer"; d.style.cssText = layerStyle(i) + "top:" + (i * step) + "px"; bg.appendChild(d); }
+  }
+  onScroll();
+}
+function showOnly(k){ [...bg.children].forEach((d, i) => d.style.opacity = i === k ? "var(--bgop)" : "0"); }
+function onScroll(){
+  const y = window.scrollY;
+  document.getElementById("pos").textContent = "scroll " + Math.round(y) + "px";
+  if (mode === "S1"){
+    const k = Math.floor(y / SEG) % IMAGES.length;
+    const t = (y % SEG) / SEG;                      /* 区間内の進み */
+    const next = (k + 1) % IMAGES.length;
+    const fade = t > .8 ? (t - .8) / .2 : 0;        /* 区間の最後 20% でクロスフェード */
+    [...bg.children].forEach((d, i) => {
+      d.style.transition = "none";
+      d.style.opacity = i === k ? "calc(var(--bgop) * " + (1 - fade) + ")" : i === next ? "calc(var(--bgop) * " + fade + ")" : "0";
+    });
+  } else if (mode === "S2" || mode === "S4"){
+    bg.style.transform = "translateY(" + (-y) + "px)";
+  } else if (mode === "S3"){
+    bg.style.transform = "translateY(" + (-y * .5) + "px)";
+  }
+}
+window.addEventListener("scroll", onScroll, { passive:true });
+window.addEventListener("resize", build);
+
+function setMode(m){
+  mode = m; document.body.classList.remove("S1","S2","S3","S4","S5"); document.body.classList.add(m);
+  document.querySelectorAll("#modes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.m === m)));
+  document.getElementById("note").textContent = NOTES[m];
+  build();
+}
+document.querySelectorAll("#modes button").forEach(b => b.onclick = () => setMode(b.dataset.m));
+const op = document.getElementById("op");
+op.oninput = () => { document.documentElement.style.setProperty("--bgop", op.value / 100); document.getElementById("opv").textContent = op.value + "%"; };
+document.getElementById("gray").onchange = e => document.body.classList.toggle("gray", e.target.checked);
+
+/* URL: #S2,1800 で 方式と初期スクロール位置を指定 */
+const h = location.hash.slice(1).split(",");
+window.addEventListener("load", () => {
+  setMode(/^S[1-5]$/.test(h[0]) ? h[0] : "S1");
+  if (h[1]) setTimeout(() => window.scrollTo(0, Number(h[1])), 50);
+});
+</script>
+</body></html>
